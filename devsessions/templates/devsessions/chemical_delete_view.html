@@ -1,0 +1,10 @@
+
+
+{% extends "devsessions/base.html" %}
+{% block content %}
+<h1>Delete Chemical</h1>
+<form action="" method="post">{% csrf_token %}
+<p>Are you sure you want to delete "{{ chemical.name }}"?</p>
+<button class="btn btn-danger ms-2" type="submit">Confirm</button>
+</form>
+{% endblock content %}

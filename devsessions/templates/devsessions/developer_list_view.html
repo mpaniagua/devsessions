@@ -1,0 +1,45 @@
+
+{%  extends  "devsessions/base.html"  %}
+	
+
+{%  block title %}Developers{% endblock title  %}
+{%  block  content  %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'devsessions/css/themes.css' %}">
+{%for developer in developer_list%}
+<div  class="card">
+    <div class="card-header">
+        <span class="fw-bold">
+            <a href="">{{developer.name}}</a>
+        </span>
+
+    </div>
+    <div class="card-body">
+        <ul class="list-group">
+        {% for chemical in developer.developerchemical_set.all  %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ chemical.Chemical.name }}
+            <span class="badge badge-primary badge-pill text-bg-light">{{chemical.amount}} {{chemical.unit}}</span>
+            </li>
+
+        {% endfor %}
+        </ul>
+    </div>
+    
+						
+
+   
+</div>    
+
+ <button class="btn btn-outline-secondary d-flex align-items-center gap-2" id="themeToggler" type="button" aria-label="Cambiar tema">
+                		<i id="themeIcon" class="bi bi-sun-fill"></i>
+                	<span id="themeText">Modo Claro</span>
+
+						<script src="{% static 'devsessions/js/theme.js' %}"></script>
+
+
+
+
+{% endfor%}
+ 
+{%endblock content %}

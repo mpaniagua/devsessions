@@ -1,0 +1,42 @@
+{%  extends  "devsessions/base.html"  %}
+{%  block title %}Chemicals{% endblock title  %}
+{%  block  content  %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'devsessions/css/themes.css' %}">
+{%for chemical in chemical_list%}
+<div  class="card">
+    <div class="card-header">
+
+        <div class="card-body" >
+             Chemica name: {{chemical.name}}
+
+        </div>
+
+        <div class="card-footer" >
+            
+            
+            <a href="{% url 'chemical_delete' chemical.pk %}" class="text-decoration-none">
+                Delete
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-minus-fill" viewBox="0 0 16 16">
+  <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6 8.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1"/>
+</svg>
+              </a>
+              
+        </div>
+      
+    </div>
+ 
+</div>    
+{% endfor%}
+ <a href="{% url 'chemical_new'  %}">New</a>
+ 
+ <button class="btn btn-outline-secondary d-flex align-items-center gap-2" id="themeToggler" type="button" aria-label="Cambiar tema">
+                		<i id="themeIcon" class="bi bi-sun-fill"></i>
+                	<span id="themeText">Modo Claro</span>
+
+						<script src="{% static 'devsessions/js/theme.js' %}"></script>
+
+
+
+
+{%endblock content %}

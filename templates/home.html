@@ -1,0 +1,27 @@
+<!--	templates/home.html	-->
+{%	extends	"base.html"	%}
+
+{%block title%}
+Home
+{%endblock title%}
+
+{%block content%}
+
+
+    {%	if	user.is_authenticated and user.is_approved	%}
+        <p>Hi	{{	user.username	}}!</p>
+        <p>You age is {{user.age}}</p>
+        <p>Your Name is : {{user.first_name}},{{user.last_name}}</p>
+        <form	action="{%	url	'logout'	%}"	method="post">
+            {%	csrf_token	%}
+            <button	 class="btn	btn-success	ms-2" type="submit">Log	Out</button>
+            
+        </form>
+        </br>
+        <p><a	class="btn	btn-primary"	href="{%	url	'article_list'	%}"	role="button">
+View	all	articles</a></p>	<!--	new	-->
+    {%	else	%}
+        <p>You	are	not	logged	in or your account is pending approval</p>        
+       
+        {%	endif	%}
+{%endblock content%}

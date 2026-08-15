@@ -1,0 +1,124 @@
+/* ==========================================
+           TEMA VERDE (Bosque)
+           ========================================== */
+        [data-bs-theme="green"] {
+            --bs-body-color: #e2f0d9;
+            --bs-body-bg: #112211;
+            --bs-body-bg-rgb: 17, 34, 17;
+            --bs-card-bg: #1a331a;
+            --bs-border-color: #2e592e;
+            --bs-primary: #4e9f3d;
+            --bs-primary-rgb: 78, 159, 61;
+            --bs-secondary-color: #a3b899;
+            --bs-link-color: #d8f3dc;
+            --bs-link-hover-color: #b7e4c7;
+        }
+
+        [data-bs-theme="green"] .btn-primary {
+            --bs-btn-bg: #2e7d32;
+            --bs-btn-border-color: #2e7d32;
+            --bs-btn-hover-bg: #1b5e20;
+            --bs-btn-hover-border-color: #1b5e20;
+            --bs-btn-color: #ffffff;
+        }
+
+        /* ==========================================
+           TEMA PEPSI
+           ========================================== */
+        [data-bs-theme="pepsi"] {
+            --bs-body-color: #f8f9fa;
+            --bs-body-bg: #000b21;
+            --bs-body-bg-rgb: 0, 11, 33;
+            --bs-card-bg: #00163a;
+            --bs-border-color: #002b75;
+            --bs-primary: #e31837;
+            --bs-primary-rgb: 227, 24, 55;
+            --bs-secondary-color: #9bb3de;
+            --bs-link-color: #5c9eff;
+            --bs-link-hover-color: #9ec5ff;
+        }
+
+        [data-bs-theme="pepsi"] .btn-primary {
+            --bs-btn-bg: #e31837;
+            --bs-btn-border-color: #e31837;
+            --bs-btn-hover-bg: #0051ba;
+            --bs-btn-hover-border-color: #0051ba;
+            --bs-btn-color: #ffffff;
+        }
+
+        [data-bs-theme="pepsi"] .alert-info {
+            --bs-alert-bg: #001f54;
+            --bs-alert-color: #d0e1ff;
+            --bs-alert-border-color: #003a99;
+        }
+
+        /* ==========================================
+           TEMA LEICA
+           ========================================== */
+        [data-bs-theme="leica"] {
+            --bs-body-color: #f0f0f0;
+            --bs-body-bg: #121212;
+            --bs-body-bg-rgb: 18, 18, 18;
+            --bs-card-bg: #1e1e1e;
+            --bs-border-color: #333333;
+            --bs-primary: #e4002b;
+            --bs-primary-rgb: 228, 0, 43;
+            --bs-secondary-color: #aaaaaa;
+            --bs-link-color: #ff3352;
+            --bs-link-hover-color: #ffffff;
+        }
+
+        [data-bs-theme="leica"] .btn-primary {
+            --bs-btn-bg: #e4002b;
+            --bs-btn-border-color: #e4002b;
+            --bs-btn-hover-bg: #b30022;
+            --bs-btn-hover-border-color: #b30022;
+            --bs-btn-color: #ffffff;
+        }
+
+        [data-bs-theme="leica"] .alert-info {
+            --bs-alert-bg: #222222;
+            --bs-alert-color: #e0e0e0;
+            --bs-alert-border-color: #444444;
+        }
+
+        /* ==========================================
+           TEMA TIERRA (Café & Verde Musgo)
+           ========================================== */
+        [data-bs-theme="earth"] {
+    /* Fondo café espresso profundo (#1a1614 -> 26, 22, 20 en RGB) */
+    --bs-body-color: #e8e2d5;
+    --bs-body-color-rgb: 232, 226, 213;
+    --bs-body-bg: #26201d;
+    --bs-body-bg-rgb: 26, 22, 20; /* <-- Esta variable es indispensable */
+
+    /* Tarjetas café arcilla (#28221d -> 40, 34, 29 en RGB) */
+    --bs-card-bg: #28221d;
+    --bs-card-bg-rgb: 40, 34, 29; /* <-- Esta variable es indispensable */
+    --bs-border-color: #42372f;
+
+    /* Verde oliva / musgo (#557a46 -> 85, 122, 70 en RGB) */
+    --bs-primary: #557a46;
+    --bs-primary-rgb: 85, 122, 70;
+    --bs-secondary-color: #b8a898;
+
+    /* Enlaces */
+    --bs-link-color: #8cb07d;
+    --bs-link-hover-color: #b4d3a7;
+}
+
+/* Ajustes del botón primario */
+[data-bs-theme="earth"] .btn-primary {
+    --bs-btn-bg: #557a46;
+    --bs-btn-border-color: #557a46;
+    --bs-btn-hover-bg: #7f4f24;
+    --bs-btn-hover-border-color: #7f4f24;
+    --bs-btn-color: #ffffff;
+}
+
+/* Ajustes de alertas */
+[data-bs-theme="earth"] .alert-info {
+    --bs-alert-bg: #2b241e;
+    --bs-alert-color: #ded3c5;
+    --bs-alert-border-color: #4a3e34;
+}
