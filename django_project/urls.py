@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import path,include
 from bootstrap_colors.views import BootstrapColorsView
 from django.views.generic.base import TemplateView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -28,7 +30,9 @@ urlpatterns = [
     path("",include("pages.urls")),
     path('colors.css', BootstrapColorsView.as_view(), name='colors'),
     path("sessions/", include("devsessions.urls")),
-    path("api/v1/",include("api.urls"))
+    path("api/v1/",include("api.urls")),
+    path("cameras/",include("cameras.urls"))
     #path("",TemplateView.as_view(template_name="home.html"),name="home"),		#	new
 
 ]
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

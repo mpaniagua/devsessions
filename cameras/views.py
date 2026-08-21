@@ -1,3 +1,11 @@
 from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 
-# Create your views here.
+@ensure_csrf_cookie
+
+def camera_catalog_view(request):
+    return render(request, 'cameras/cameras.html')
+
+
+def lens_catalog_view(request):
+    return render(request, 'cameras/lenses.html')
