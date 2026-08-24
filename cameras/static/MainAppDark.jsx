@@ -278,25 +278,30 @@ const KitModal = ({ kit, bodies, lenses, accessories, filmFormats, negativeSizes
   );
 };
 
-
 // =================================================================
-// 2. SECCIÓN: CÁMARAS (ENDPOINT /api/v1/camerabody/)
+// 2. SECCIÓN: CÁMARAS (CON MANEJO DE ERRORES Y SANITIZACIÓN)
 // =================================================================
 const CameraView = () => {
   const [cameras, setCameras] = React.useState([]);
   const [mounts, setMounts] = React.useState([]);
+  const [formats, setFormats] = React.useState([]);
+  const [sizes, setSizes] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingCamera, setEditingCamera] = React.useState(null);
 
   const fetchAll = async () => {
     setLoading(true);
-    const [rC, rM] = await Promise.all([
-      fetch('/api/v1/camerabody/'), // ENDPOINT CORREGIDO
+    const [rC, rM, rF, rS] = await Promise.all([
+      fetch('/api/v1/camerabody/'),
       fetch('/api/v1/lens-mounts/').catch(() => null),
+      fetch('/api/v1/film-formats/').catch(() => null),
+      fetch('/api/v1/negative-sizes/').catch(() => null),
     ]);
     if (rC && rC.ok) setCameras(await rC.json());
     if (rM && rM.ok) setMounts(await rM.json());
+    if (rF && rF.ok) setFormats(await rF.json());
+    if (rS && rS.ok) setSizes(await rS.json());
     setLoading(false);
   };
 
@@ -304,20 +309,39 @@ const CameraView = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('¿Eliminar esta cámara?')) return;
-    await fetch(`/api/v1/camerabody/${id}/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+    await fetch(`/api/v1/camerabody/${id}/`, { 
+      method: 'DELETE', 
+      headers: { 'X-CSRFToken': getCookie('csrftoken') } 
+    });
     fetchAll();
   };
 
-  const handleSave = async (formData) => {
-    const isEdit = Boolean(editingCamera);
-    const url = isEdit ? `/api/v1/camerabody/${editingCamera.id}/` : '/api/v1/camerabody/';
-    await fetch(url, {
-      method: isEdit ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify(formData),
-    });
-    setIsModalOpen(false);
-    fetchAll();
+  const handleSave = async (payload) => {
+    try {
+      const isEdit = Boolean(editingCamera);
+      const url = isEdit ? `/api/v1/camerabody/${editingCamera.id}/` : '/api/v1/camerabody/';
+      
+      const response = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'X-CSRFToken': getCookie('csrftoken') 
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error DRF:", errorData);
+        alert(`Error al guardar la cámara: ${JSON.stringify(errorData)}`);
+        return;
+      }
+
+      setIsModalOpen(false);
+      fetchAll();
+    } catch (err) {
+      alert(`Error de red: ${err.message}`);
+    }
   };
 
   if (loading) return <div style={styles.center}>Cargando cámaras...</div>;
@@ -326,7 +350,9 @@ const CameraView = () => {
     <div>
       <div style={styles.headerBar}>
         <h1 style={styles.title}>Catálogo de Cámaras</h1>
-        <button style={styles.btnPrimary} onClick={() => { setEditingCamera(null); setIsModalOpen(true); }}>+ Agregar Cámara</button>
+        <button style={styles.btnPrimary} onClick={() => { setEditingCamera(null); setIsModalOpen(true); }}>
+          + Agregar Cámara
+        </button>
       </div>
 
       <div style={styles.grid}>
@@ -338,6 +364,7 @@ const CameraView = () => {
             </div>
             <p><strong>Montura:</strong> {cam.lens_mount_detail ? cam.lens_mount_detail.name : 'No asignada'}</p>
             <p><strong>Mecanismo:</strong> {cam.mechanism_type}</p>
+            {cam.release_year && <p><strong>Año:</strong> {cam.release_year}</p>}
             <div style={styles.cardActions}>
               <button style={styles.btnDelete} onClick={() => handleDelete(cam.id)}>🗑️ Eliminar</button>
               <button style={styles.btnEdit} onClick={() => { setEditingCamera(cam); setIsModalOpen(true); }}>✏️ Editar</button>
@@ -347,62 +374,179 @@ const CameraView = () => {
       </div>
 
       {isModalOpen && (
-        <CameraModal camera={editingCamera} mounts={mounts} onSave={handleSave} onClose={() => setIsModalOpen(false)} />
+        <CameraModal 
+          camera={editingCamera} 
+          mounts={mounts} 
+          formats={formats} 
+          sizes={sizes} 
+          onSave={handleSave} 
+          onClose={() => setIsModalOpen(false)} 
+        />
       )}
     </div>
   );
 };
 
-const CameraModal = ({ camera, mounts, onSave, onClose }) => {
+const CameraModal = ({ camera, mounts, formats, sizes, onSave, onClose }) => {
   const [formData, setFormData] = React.useState({
     brand: camera?.brand || '',
     model: camera?.model || '',
     camera_type: camera?.camera_type || 'SLR',
     mechanism_type: camera?.mechanism_type || 'MECHANICAL',
+    has_light_meter: camera?.has_light_meter ?? false,
+    has_interchangeable_lens: camera?.has_interchangeable_lens ?? true,
     lens_mount: camera?.lens_mount_detail ? camera.lens_mount_detail.id : (camera?.lens_mount || ''),
+    release_year: camera?.release_year || '',
+    film_formats: camera ? camera.film_formats_detail?.map(f => f.id) || [] : [],
+    negative_sizes: camera ? camera.negative_sizes_detail?.map(s => s.id) || [] : [],
+    notes: camera?.notes || ''
   });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Estructurar un JSON completamente válido para DRF
+    const payload = {
+      brand: formData.brand,
+      model: formData.model,
+      camera_type: formData.camera_type,
+      mechanism_type: formData.mechanism_type,
+      has_light_meter: Boolean(formData.has_light_meter),
+      has_interchangeable_lens: Boolean(formData.has_interchangeable_lens),
+      lens_mount: formData.lens_mount ? parseInt(formData.lens_mount, 10) : null,
+      release_year: formData.release_year ? parseInt(formData.release_year, 10) : null,
+      film_formats: formData.film_formats || [],
+      negative_sizes: formData.negative_sizes || [],
+      notes: formData.notes || ''
+    };
+
+    onSave(payload);
+  };
 
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
         <h2>{camera ? 'Editar Cámara' : 'Nueva Cámara'}</h2>
-        <form onSubmit={(e) => { e.preventDefault(); onSave({...formData, lens_mount: formData.lens_mount ? parseInt(formData.lens_mount) : null}); }}>
+        <form onSubmit={handleSubmit}>
           <div style={styles.formGroup}>
             <label>Marca (*):</label>
-            <input type="text" value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} required style={styles.input} />
+            <input 
+              type="text" 
+              value={formData.brand} 
+              onChange={e => setFormData({...formData, brand: e.target.value})} 
+              required 
+              style={styles.input} 
+            />
           </div>
           <div style={styles.formGroup}>
             <label>Modelo (*):</label>
-            <input type="text" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} required style={styles.input} />
+            <input 
+              type="text" 
+              value={formData.model} 
+              onChange={e => setFormData({...formData, model: e.target.value})} 
+              required 
+              style={styles.input} 
+            />
           </div>
           <div style={styles.formGroup}>
-            <label>Tipo:</label>
-            <select value={formData.camera_type} onChange={e => setFormData({...formData, camera_type: e.target.value})} style={styles.input}>
+            <label>Tipo de Cámara:</label>
+            <select 
+              value={formData.camera_type} 
+              onChange={e => setFormData({...formData, camera_type: e.target.value})} 
+              style={styles.input}
+            >
               <option value="SLR">SLR</option>
               <option value="RANGEFINDER">Rangefinder</option>
               <option value="TLR">TLR</option>
               <option value="POINT_AND_SHOOT">Point & Shoot</option>
               <option value="MEDIUM_FORMAT_SYSTEM">Medio Formato</option>
               <option value="LARGE_FORMAT_VIEW">Gran Formato</option>
+              <option value="OTHER">Otro</option>
             </select>
           </div>
           <div style={styles.formGroup}>
-            <label>Montura:</label>
-            <select value={formData.lens_mount} onChange={e => setFormData({...formData, lens_mount: e.target.value})} style={styles.input}>
+            <label>Montura del Lente:</label>
+            <select 
+              value={formData.lens_mount} 
+              onChange={e => setFormData({...formData, lens_mount: e.target.value})} 
+              style={styles.input}
+            >
               <option value="">-- Sin Montura / No aplica --</option>
-              {mounts.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              {mounts.map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
             </select>
           </div>
+          <div style={styles.formGroup}>
+            <label>Mecanismo:</label>
+            <select 
+              value={formData.mechanism_type} 
+              onChange={e => setFormData({...formData, mechanism_type: e.target.value})} 
+              style={styles.input}
+            >
+              <option value="MECHANICAL">Mecánica</option>
+              <option value="ELECTRONIC">Electrónica</option>
+              <option value="HYBRID">Híbrida</option>
+            </select>
+          </div>
+          <div style={styles.formGroup}>
+            <label>Año de Lanzamiento:</label>
+            <input 
+              type="number" 
+              value={formData.release_year} 
+              onChange={e => setFormData({...formData, release_year: e.target.value})} 
+              placeholder="Ej. 1970"
+              style={styles.input} 
+            />
+          </div>
+
+          {formats.length > 0 && (
+            <div style={styles.formGroup}>
+              <label>Formatos de Película (Ctrl/Cmd para varios):</label>
+              <select 
+                multiple 
+                value={formData.film_formats} 
+                onChange={e => setFormData({
+                  ...formData, 
+                  film_formats: Array.from(e.target.selectedOptions, o => parseInt(o.value, 10))
+                })} 
+                style={{ ...styles.input, height: '80px' }}
+              >
+                {formats.map(f => (
+                  <option key={f.id} value={f.id}>{f.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {sizes.length > 0 && (
+            <div style={styles.formGroup}>
+              <label>Tamaños de Negativo (Ctrl/Cmd para varios):</label>
+              <select 
+                multiple 
+                value={formData.negative_sizes} 
+                onChange={e => setFormData({
+                  ...formData, 
+                  negative_sizes: Array.from(e.target.selectedOptions, o => parseInt(o.value, 10))
+                })} 
+                style={{ ...styles.input, height: '80px' }}
+              >
+                {sizes.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div style={styles.modalActions}>
             <button type="button" onClick={onClose} style={styles.btnSecondary}>Cancelar</button>
-            <button type="submit" style={styles.btnPrimary}>Guardar</button>
+            <button type="submit" style={styles.btnPrimary}>Guardar Cámara</button>
           </div>
         </form>
       </div>
     </div>
   );
 };
-
 
 // =================================================================
 // 3. SECCIÓN: LENTES
@@ -656,17 +800,39 @@ const AccessoryModal = ({ accessory, onSave, onClose }) => {
 const MountView = () => {
   const [mounts, setMounts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingMount, setEditingMount] = React.useState(null);
 
-  const fetchAll = () => {
+  const fetchAll = async () => {
     setLoading(true);
-    fetch('/api/v1/lens-mounts/').then(r => r.json()).then(data => { setMounts(data); setLoading(false); });
+    const res = await fetch('/api/v1/lens-mounts/').catch(() => null);
+    if (res && res.ok) setMounts(await res.json());
+    setLoading(false);
   };
 
   React.useEffect(() => { fetchAll(); }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar esta montura?')) return;
-    await fetch(`/api/v1/lens-mounts/${id}/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+    if (!window.confirm('¿Eliminar esta montura? Ten en cuenta que si está asignada a cámaras o lentes podría causar conflictos.')) return;
+    await fetch(`/api/v1/lens-mounts/${id}/`, { 
+      method: 'DELETE', 
+      headers: { 'X-CSRFToken': getCookie('csrftoken') } 
+    });
+    fetchAll();
+  };
+
+  const handleSave = async (formData) => {
+    const isEdit = Boolean(editingMount);
+    const url = isEdit ? `/api/v1/lens-mounts/${editingMount.id}/` : '/api/v1/lens-mounts/';
+    await fetch(url, {
+      method: isEdit ? 'PUT' : 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-CSRFToken': getCookie('csrftoken') 
+      },
+      body: JSON.stringify(formData),
+    });
+    setIsModalOpen(false);
     fetchAll();
   };
 
@@ -676,7 +842,14 @@ const MountView = () => {
     <div>
       <div style={styles.headerBar}>
         <h1 style={styles.title}>Catálogo de Monturas</h1>
+        <button 
+          style={styles.btnPrimary} 
+          onClick={() => { setEditingMount(null); setIsModalOpen(true); }}
+        >
+          + Agregar Montura
+        </button>
       </div>
+
       <div style={styles.grid}>
         {mounts.map(m => (
           <div key={m.id} style={styles.card}>
@@ -686,9 +859,60 @@ const MountView = () => {
             {m.description && <p style={{ color: darkTheme.textMuted }}>{m.description}</p>}
             <div style={styles.cardActions}>
               <button style={styles.btnDelete} onClick={() => handleDelete(m.id)}>🗑️ Eliminar</button>
+              <button style={styles.btnEdit} onClick={() => { setEditingMount(m); setIsModalOpen(true); }}>✏️ Editar</button>
             </div>
           </div>
         ))}
+      </div>
+
+      {isModalOpen && (
+        <MountModal 
+          mount={editingMount} 
+          onSave={handleSave} 
+          onClose={() => setIsModalOpen(false)} 
+        />
+      )}
+    </div>
+  );
+};
+
+const MountModal = ({ mount, onSave, onClose }) => {
+  const [formData, setFormData] = React.useState({
+    name: mount?.name || '',
+    description: mount?.description || '',
+  });
+
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalContent}>
+        <h2>{mount ? 'Editar Montura' : 'Nueva Montura'}</h2>
+        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }}>
+          <div style={styles.formGroup}>
+            <label>Nombre de la Montura (*):</label>
+            <input 
+              type="text" 
+              value={formData.name} 
+              onChange={e => setFormData({...formData, name: e.target.value})} 
+              placeholder="Ej. Copal #0, M42, Leica M, Hasselblad V"
+              required 
+              style={styles.input} 
+            />
+          </div>
+          <div style={styles.formGroup}>
+            <label>Descripción / Notas:</label>
+            <textarea 
+              value={formData.description} 
+              onChange={e => setFormData({...formData, description: e.target.value})} 
+              placeholder="Ej. Obturador central para gran formato, Roscada 42mm, etc."
+              rows="3" 
+              style={styles.input} 
+            />
+          </div>
+          <div style={styles.modalActions}>
+            <button type="button" onClick={onClose} style={styles.btnSecondary}>Cancelar</button>
+            <button type="submit" style={styles.btnPrimary}>Guardar</button>
+          </div>
+        </form>
       </div>
     </div>
   );
