@@ -15,73 +15,79 @@ function getCookie(name) {
   return cookieValue;
 }
 
+// =================================================================
+// PALETA DE COLORES TEMA ASTROPLATE (Zinc Dark / Minimalist Graphite)
+// =================================================================
 const darkTheme = {
-  bgApp: '#0f172a',
-  bgCard: '#1e293b',
-  bgModal: '#1e293b',
-  bgInput: '#334155',
-  border: '#334155',
-  textMain: '#f8fafc',
-  textMuted: '#94a3b8',
-  primary: '#3b82f6',
-  accentTag: '#1e3a8a',
-  accentTagText: '#93c5fd',
-  greenTag: '#064e3b',
-  greenTagText: '#6ee7b7',
+  bgApp: '#18181b',
+  bgCard: '#27272a',
+  bgModal: '#27272a',
+  bgInput: '#18181b',
+  border: '#3f3f46',
+  textMain: '#f4f4f5',
+  textMuted: '#a1a1aa',
+  primary: '#f4f4f5',
+  primaryText: '#18181b',
+  accentTag: '#3f3f46',
+  accentTagText: '#f4f4f5',
+  greenTag: '#14532d',
+  greenTagText: '#86efac',
   dangerBg: '#450a0a',
-  dangerBorder: '#991b1b',
+  dangerBorder: '#7f1d1d',
   dangerText: '#fca5a5',
 };
 
 const styles = {
-  container: { padding: '2rem', maxWidth: '1200px', margin: '0 auto' },
+  container: { padding: '2.5rem 2rem', maxWidth: '1200px', margin: '0 auto' },
   navBar: {
-    backgroundColor: '#1e293b',
-    borderBottom: '1px solid #334155',
-    padding: '1rem 2rem',
+    backgroundColor: '#18181b',
+    borderBottom: `1px solid ${darkTheme.border}`,
+    padding: '1.2rem 2.5rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
   },
-  brandTitle: { fontSize: '1.25rem', fontWeight: 'bold', color: '#f8fafc', margin: 0 },
-  navTabs: { display: 'flex', gap: '0.5rem' },
+  brandTitle: { fontSize: '1.35rem', fontWeight: '800', color: darkTheme.textMain, margin: 0, letterSpacing: '-0.025em' },
+  navTabs: { display: 'flex', gap: '0.6rem' },
   navButton: (active) => ({
-    backgroundColor: active ? '#3b82f6' : 'transparent',
-    color: active ? '#ffffff' : '#94a3b8',
-    border: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '6px',
+    backgroundColor: active ? '#27272a' : 'transparent',
+    color: active ? '#ffffff' : darkTheme.textMuted,
+    border: active ? `1px solid ${darkTheme.border}` : '1px solid transparent',
+    padding: '0.55rem 1.1rem',
+    borderRadius: '8px',
     cursor: 'pointer',
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontSize: '0.9rem',
+    transition: 'all 0.2s ease',
   }),
   headerBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' },
-  title: { color: darkTheme.textMain, margin: 0 },
+  title: { color: darkTheme.textMain, margin: 0, fontWeight: '800', fontSize: '1.8rem', letterSpacing: '-0.025em' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' },
-  card: { border: `1px solid ${darkTheme.border}`, borderRadius: '8px', padding: '1.5rem', backgroundColor: darkTheme.bgCard },
+  card: { border: `1px solid ${darkTheme.border}`, borderRadius: '12px', padding: '1.75rem', backgroundColor: darkTheme.bgCard, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.3)' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' },
-  badge: { backgroundColor: '#334155', color: '#cbd5e1', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' },
-  badgeActive: { backgroundColor: '#064e3b', color: '#6ee7b7', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' },
-  badgeInactive: { backgroundColor: '#450a0a', color: '#fca5a5', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' },
-  detailBox: { backgroundColor: '#0f172a', padding: '0.8rem', borderRadius: '6px', borderLeft: '4px solid #3b82f6', margin: '0.5rem 0' },
+  badge: { backgroundColor: '#3f3f46', color: '#f4f4f5', padding: '0.25rem 0.6rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700' },
+  badgeActive: { backgroundColor: darkTheme.greenTag, color: darkTheme.greenTagText, padding: '0.25rem 0.6rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700' },
+  badgeInactive: { backgroundColor: darkTheme.dangerBg, color: darkTheme.dangerText, padding: '0.25rem 0.6rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700' },
+  detailBox: { backgroundColor: '#18181b', padding: '0.9rem', borderRadius: '8px', borderLeft: `4px solid ${darkTheme.textMain}`, margin: '0.6rem 0' },
   section: { marginTop: '1rem' },
-  tagContainer: { display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.3rem' },
-  tagPrimary: { backgroundColor: darkTheme.accentTag, color: darkTheme.accentTagText, padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.85rem' },
-  tagSecondary: { backgroundColor: darkTheme.greenTag, color: darkTheme.greenTagText, padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.85rem' },
-  tagDark: { backgroundColor: '#334155', color: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.80rem' },
+  tagContainer: { display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.4rem' },
+  tagPrimary: { backgroundColor: darkTheme.accentTag, color: darkTheme.accentTagText, padding: '0.25rem 0.55rem', borderRadius: '6px', fontSize: '0.825rem' },
+  tagSecondary: { backgroundColor: darkTheme.greenTag, color: darkTheme.greenTagText, padding: '0.25rem 0.55rem', borderRadius: '6px', fontSize: '0.825rem' },
+  tagDark: { backgroundColor: '#18181b', color: '#e4e4e7', padding: '0.25rem 0.55rem', borderRadius: '6px', fontSize: '0.80rem', border: `1px solid ${darkTheme.border}` },
   center: { textAlign: 'center', padding: '3rem', fontSize: '1.2rem', color: darkTheme.textMuted },
   
-  btnPrimary: { backgroundColor: darkTheme.primary, color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' },
-  btnSecondary: { backgroundColor: '#334155', color: '#cbd5e1', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', marginRight: '0.5rem' },
+  btnPrimary: { backgroundColor: darkTheme.primary, color: darkTheme.primaryText, border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '0.9rem' },
+  btnSecondary: { backgroundColor: '#3f3f46', color: '#f4f4f5', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', marginRight: '0.5rem', fontWeight: '600' },
   cardActions: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1.5rem' },
-  btnEdit: { backgroundColor: '#334155', color: '#f8fafc', border: `1px solid ${darkTheme.border}`, padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer' },
-  btnDelete: { backgroundColor: darkTheme.dangerBg, color: darkTheme.dangerText, border: `1px solid ${darkTheme.dangerBorder}`, padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer' },
+  btnEdit: { backgroundColor: '#3f3f46', color: '#f4f4f5', border: `1px solid ${darkTheme.border}`, padding: '0.45rem 0.9rem', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' },
+  btnDelete: { backgroundColor: darkTheme.dangerBg, color: darkTheme.dangerText, border: `1px solid ${darkTheme.dangerBorder}`, padding: '0.45rem 0.9rem', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' },
 
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-  modalContent: { backgroundColor: darkTheme.bgModal, padding: '2rem', borderRadius: '8px', width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto', border: `1px solid ${darkTheme.border}` },
-  formGroup: { marginBottom: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' },
-  input: { padding: '0.6rem', borderRadius: '6px', border: `1px solid ${darkTheme.border}`, backgroundColor: darkTheme.bgInput, color: darkTheme.textMain, fontSize: '0.9rem', width: '100%', boxSizing: 'border-box' },
-  modalActions: { display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
+  modalContent: { backgroundColor: darkTheme.bgModal, padding: '2.25rem', borderRadius: '12px', width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto', border: `1px solid ${darkTheme.border}` },
+  formGroup: { marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' },
+  input: { padding: '0.65rem 0.8rem', borderRadius: '8px', border: `1px solid ${darkTheme.border}`, backgroundColor: darkTheme.bgInput, color: darkTheme.textMain, fontSize: '0.9rem', width: '100%', boxSizing: 'border-box' },
+  modalActions: { display: 'flex', justifyContent: 'flex-end', marginTop: '1.75rem' }
 };
 
 // =================================================================
@@ -91,9 +97,9 @@ const MainApp = () => {
   const [activeTab, setActiveTab] = React.useState('kits');
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: darkTheme.bgApp }}>
+    <div style={{ minHeight: '100vh', backgroundColor: darkTheme.bgApp, color: darkTheme.textMain }}>
       <nav style={styles.navBar}>
-        <div style={styles.brandTitle}>📷 Gabinete Fotográfico</div>
+        <div style={styles.brandTitle}>📷  Gabinete Fotografico</div>
         <div style={styles.navTabs}>
           <button style={styles.navButton(activeTab === 'kits')} onClick={() => setActiveTab('kits')}>⚙️ Kits</button>
           <button style={styles.navButton(activeTab === 'cameras')} onClick={() => setActiveTab('cameras')}>📷 Cámaras</button>
@@ -116,7 +122,7 @@ const MainApp = () => {
 
 
 // =================================================================
-// 1. SECCIÓN: KITS (CON FILTRADO ESTRICTO DE LENTES)
+// 1. SECCIÓN: KITS
 // =================================================================
 const KitView = () => {
   const [kits, setKits] = React.useState([]);
@@ -134,7 +140,7 @@ const KitView = () => {
       setLoading(true);
       const [rK, rB, rL, rA, rF, rS] = await Promise.all([
         fetch('/api/v1/kits/'),
-        fetch('/api/v1/camerabody/').catch(() => null), // ENDPOINT CORREGIDO
+        fetch('/api/v1/camerabody/').catch(() => null),
         fetch('/api/v1/lenses/').catch(() => null),
         fetch('/api/v1/accessories/').catch(() => null),
         fetch('/api/v1/film-formats/').catch(() => null),
@@ -182,7 +188,7 @@ const KitView = () => {
         {kits.map(kit => (
           <div key={kit.id} style={styles.card}>
             <div style={styles.cardHeader}>
-              <h2 style={{ margin: 0, fontSize: '1.2rem' }}>{kit.name}</h2>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>{kit.name}</h2>
               <span style={kit.is_active_setup ? styles.badgeActive : styles.badgeInactive}>
                 {kit.is_active_setup ? 'Listo' : 'Incompleto'}
               </span>
@@ -191,13 +197,13 @@ const KitView = () => {
               <p style={{ margin: 0 }}><strong>📷 Cuerpo:</strong> {kit.camera_body_detail ? `${kit.camera_body_detail.brand} ${kit.camera_body_detail.model}` : 'N/A'}</p>
             </div>
             <div style={styles.section}>
-              <strong>🔍 Lentes Incluidos:</strong>
+              <strong style={{ color: darkTheme.textMuted }}>🔍 Lentes Incluidos:</strong>
               <div style={styles.tagContainer}>
                 {kit.lenses_detail?.map(l => <span key={l.id} style={styles.tagPrimary}>{l.brand} {l.focal_length} ({l.model})</span>)}
               </div>
             </div>
             <div style={styles.section}>
-              <strong>📦 Accesorios:</strong>
+              <strong style={{ color: darkTheme.textMuted }}>📦 Accesorios:</strong>
               <div style={styles.tagContainer}>
                 {kit.accessories_detail?.map(a => <span key={a.id} style={styles.tagDark}>{a.brand} {a.model}</span>)}
               </div>
@@ -240,7 +246,7 @@ const KitModal = ({ kit, bodies, lenses, accessories, filmFormats, negativeSizes
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
-        <h2>{kit ? 'Editar Kit' : 'Nuevo Kit'}</h2>
+        <h2 style={{ marginTop: 0, fontWeight: '800' }}>{kit ? 'Editar Kit' : 'Nuevo Kit'}</h2>
         <form onSubmit={(e) => { e.preventDefault(); onSave({...formData, camera_body: parseInt(formData.camera_body)}); }}>
           <div style={styles.formGroup}>
             <label>Nombre (*):</label>
@@ -256,7 +262,7 @@ const KitModal = ({ kit, bodies, lenses, accessories, filmFormats, negativeSizes
           <div style={styles.formGroup}>
             <label>
               Lentes Compatibles (Ctrl/Cmd para varios):
-              {selectedBodyObj && <span style={{fontSize: '0.8rem', color: '#60a5fa', display: 'block'}}>Filtrando por montura: {selectedBodyObj.lens_mount_detail?.name || 'ID ' + bodyMountId}</span>}
+              {selectedBodyObj && <span style={{fontSize: '0.8rem', color: darkTheme.textMuted, display: 'block'}}>Filtrando por montura: {selectedBodyObj.lens_mount_detail?.name || 'ID ' + bodyMountId}</span>}
             </label>
             <select multiple value={formData.lenses} onChange={e => setFormData({...formData, lenses: Array.from(e.target.selectedOptions, o => parseInt(o.value))})} style={{...styles.input, height: '110px'}}>
               {filteredLenses.map(l => <option key={l.id} value={l.id}>{l.brand} {l.focal_length} {l.model}</option>)}
@@ -278,8 +284,9 @@ const KitModal = ({ kit, bodies, lenses, accessories, filmFormats, negativeSizes
   );
 };
 
+
 // =================================================================
-// 2. SECCIÓN: CÁMARAS (CON MANEJO DE ERRORES Y SANITIZACIÓN)
+// 2. SECCIÓN: CÁMARAS
 // =================================================================
 const CameraView = () => {
   const [cameras, setCameras] = React.useState([]);
@@ -309,39 +316,20 @@ const CameraView = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('¿Eliminar esta cámara?')) return;
-    await fetch(`/api/v1/camerabody/${id}/`, { 
-      method: 'DELETE', 
-      headers: { 'X-CSRFToken': getCookie('csrftoken') } 
-    });
+    await fetch(`/api/v1/camerabody/${id}/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
     fetchAll();
   };
 
   const handleSave = async (payload) => {
-    try {
-      const isEdit = Boolean(editingCamera);
-      const url = isEdit ? `/api/v1/camerabody/${editingCamera.id}/` : '/api/v1/camerabody/';
-      
-      const response = await fetch(url, {
-        method: isEdit ? 'PUT' : 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'X-CSRFToken': getCookie('csrftoken') 
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Error DRF:", errorData);
-        alert(`Error al guardar la cámara: ${JSON.stringify(errorData)}`);
-        return;
-      }
-
-      setIsModalOpen(false);
-      fetchAll();
-    } catch (err) {
-      alert(`Error de red: ${err.message}`);
-    }
+    const isEdit = Boolean(editingCamera);
+    const url = isEdit ? `/api/v1/camerabody/${editingCamera.id}/` : '/api/v1/camerabody/';
+    await fetch(url, {
+      method: isEdit ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify(payload),
+    });
+    setIsModalOpen(false);
+    fetchAll();
   };
 
   if (loading) return <div style={styles.center}>Cargando cámaras...</div>;
@@ -350,16 +338,14 @@ const CameraView = () => {
     <div>
       <div style={styles.headerBar}>
         <h1 style={styles.title}>Catálogo de Cámaras</h1>
-        <button style={styles.btnPrimary} onClick={() => { setEditingCamera(null); setIsModalOpen(true); }}>
-          + Agregar Cámara
-        </button>
+        <button style={styles.btnPrimary} onClick={() => { setEditingCamera(null); setIsModalOpen(true); }}>+ Agregar Cámara</button>
       </div>
 
       <div style={styles.grid}>
         {cameras.map(cam => (
           <div key={cam.id} style={styles.card}>
             <div style={styles.cardHeader}>
-              <h2 style={{ margin: 0, fontSize: '1.2rem' }}>{cam.brand} {cam.model}</h2>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>{cam.brand} {cam.model}</h2>
               <span style={styles.badge}>{cam.camera_type}</span>
             </div>
             <p><strong>Montura:</strong> {cam.lens_mount_detail ? cam.lens_mount_detail.name : 'No asignada'}</p>
@@ -374,14 +360,7 @@ const CameraView = () => {
       </div>
 
       {isModalOpen && (
-        <CameraModal 
-          camera={editingCamera} 
-          mounts={mounts} 
-          formats={formats} 
-          sizes={sizes} 
-          onSave={handleSave} 
-          onClose={() => setIsModalOpen(false)} 
-        />
+        <CameraModal camera={editingCamera} mounts={mounts} formats={formats} sizes={sizes} onSave={handleSave} onClose={() => setIsModalOpen(false)} />
       )}
     </div>
   );
@@ -404,8 +383,6 @@ const CameraModal = ({ camera, mounts, formats, sizes, onSave, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Estructurar un JSON completamente válido para DRF
     const payload = {
       brand: formData.brand,
       model: formData.model,
@@ -419,42 +396,25 @@ const CameraModal = ({ camera, mounts, formats, sizes, onSave, onClose }) => {
       negative_sizes: formData.negative_sizes || [],
       notes: formData.notes || ''
     };
-
     onSave(payload);
   };
 
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
-        <h2>{camera ? 'Editar Cámara' : 'Nueva Cámara'}</h2>
+        <h2 style={{ marginTop: 0, fontWeight: '800' }}>{camera ? 'Editar Cámara' : 'Nueva Cámara'}</h2>
         <form onSubmit={handleSubmit}>
           <div style={styles.formGroup}>
             <label>Marca (*):</label>
-            <input 
-              type="text" 
-              value={formData.brand} 
-              onChange={e => setFormData({...formData, brand: e.target.value})} 
-              required 
-              style={styles.input} 
-            />
+            <input type="text" value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} required style={styles.input} />
           </div>
           <div style={styles.formGroup}>
             <label>Modelo (*):</label>
-            <input 
-              type="text" 
-              value={formData.model} 
-              onChange={e => setFormData({...formData, model: e.target.value})} 
-              required 
-              style={styles.input} 
-            />
+            <input type="text" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} required style={styles.input} />
           </div>
           <div style={styles.formGroup}>
             <label>Tipo de Cámara:</label>
-            <select 
-              value={formData.camera_type} 
-              onChange={e => setFormData({...formData, camera_type: e.target.value})} 
-              style={styles.input}
-            >
+            <select value={formData.camera_type} onChange={e => setFormData({...formData, camera_type: e.target.value})} style={styles.input}>
               <option value="SLR">SLR</option>
               <option value="RANGEFINDER">Rangefinder</option>
               <option value="TLR">TLR</option>
@@ -466,78 +426,11 @@ const CameraModal = ({ camera, mounts, formats, sizes, onSave, onClose }) => {
           </div>
           <div style={styles.formGroup}>
             <label>Montura del Lente:</label>
-            <select 
-              value={formData.lens_mount} 
-              onChange={e => setFormData({...formData, lens_mount: e.target.value})} 
-              style={styles.input}
-            >
+            <select value={formData.lens_mount} onChange={e => setFormData({...formData, lens_mount: e.target.value})} style={styles.input}>
               <option value="">-- Sin Montura / No aplica --</option>
-              {mounts.map(m => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
+              {mounts.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
-          <div style={styles.formGroup}>
-            <label>Mecanismo:</label>
-            <select 
-              value={formData.mechanism_type} 
-              onChange={e => setFormData({...formData, mechanism_type: e.target.value})} 
-              style={styles.input}
-            >
-              <option value="MECHANICAL">Mecánica</option>
-              <option value="ELECTRONIC">Electrónica</option>
-              <option value="HYBRID">Híbrida</option>
-            </select>
-          </div>
-          <div style={styles.formGroup}>
-            <label>Año de Lanzamiento:</label>
-            <input 
-              type="number" 
-              value={formData.release_year} 
-              onChange={e => setFormData({...formData, release_year: e.target.value})} 
-              placeholder="Ej. 1970"
-              style={styles.input} 
-            />
-          </div>
-
-          {formats.length > 0 && (
-            <div style={styles.formGroup}>
-              <label>Formatos de Película (Ctrl/Cmd para varios):</label>
-              <select 
-                multiple 
-                value={formData.film_formats} 
-                onChange={e => setFormData({
-                  ...formData, 
-                  film_formats: Array.from(e.target.selectedOptions, o => parseInt(o.value, 10))
-                })} 
-                style={{ ...styles.input, height: '80px' }}
-              >
-                {formats.map(f => (
-                  <option key={f.id} value={f.id}>{f.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {sizes.length > 0 && (
-            <div style={styles.formGroup}>
-              <label>Tamaños de Negativo (Ctrl/Cmd para varios):</label>
-              <select 
-                multiple 
-                value={formData.negative_sizes} 
-                onChange={e => setFormData({
-                  ...formData, 
-                  negative_sizes: Array.from(e.target.selectedOptions, o => parseInt(o.value, 10))
-                })} 
-                style={{ ...styles.input, height: '80px' }}
-              >
-                {sizes.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
           <div style={styles.modalActions}>
             <button type="button" onClick={onClose} style={styles.btnSecondary}>Cancelar</button>
             <button type="submit" style={styles.btnPrimary}>Guardar Cámara</button>
@@ -547,6 +440,7 @@ const CameraModal = ({ camera, mounts, formats, sizes, onSave, onClose }) => {
     </div>
   );
 };
+
 
 // =================================================================
 // 3. SECCIÓN: LENTES
@@ -602,7 +496,7 @@ const LensView = () => {
         {lenses.map(lens => (
           <div key={lens.id} style={styles.card}>
             <div style={styles.cardHeader}>
-              <h2 style={{ margin: 0, fontSize: '1.2rem' }}>{lens.brand} {lens.focal_length} {lens.max_aperture || ''}</h2>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>{lens.brand} {lens.focal_length} {lens.max_aperture || ''}</h2>
               <span style={styles.badge}>{lens.lens_mount_detail ? lens.lens_mount_detail.name : 'Sin montura'}</span>
             </div>
             <p><strong>Modelo:</strong> {lens.model}</p>
@@ -635,7 +529,7 @@ const LensModal = ({ lens, mounts, onSave, onClose }) => {
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
-        <h2>{lens ? 'Editar Lente' : 'Nuevo Lente'}</h2>
+        <h2 style={{ marginTop: 0, fontWeight: '800' }}>{lens ? 'Editar Lente' : 'Nuevo Lente'}</h2>
         <form onSubmit={(e) => { e.preventDefault(); onSave({...formData, lens_mount: formData.lens_mount ? parseInt(formData.lens_mount) : null}); }}>
           <div style={styles.formGroup}>
             <label>Marca (*):</label>
@@ -644,10 +538,6 @@ const LensModal = ({ lens, mounts, onSave, onClose }) => {
           <div style={styles.formGroup}>
             <label>Distancia Focal (*):</label>
             <input type="text" value={formData.focal_length} onChange={e => setFormData({...formData, focal_length: e.target.value})} placeholder="Ej. 80mm, 70-210mm" required style={styles.input} />
-          </div>
-          <div style={styles.formGroup}>
-            <label>Apertura Máxima:</label>
-            <input type="text" value={formData.max_aperture} onChange={e => setFormData({...formData, max_aperture: e.target.value})} placeholder="Ej. f/2.8" style={styles.input} />
           </div>
           <div style={styles.formGroup}>
             <label>Nombre / Modelo (*):</label>
@@ -672,7 +562,7 @@ const LensModal = ({ lens, mounts, onSave, onClose }) => {
 
 
 // =================================================================
-// 4. SECCIÓN: ACCESORIOS (COMPLETO CON FORMULARIO/MODAL)
+// 4. SECCIÓN: ACCESORIOS
 // =================================================================
 const AccessoryView = () => {
   const [accessories, setAccessories] = React.useState([]);
@@ -720,7 +610,7 @@ const AccessoryView = () => {
         {accessories.map(acc => (
           <div key={acc.id} style={styles.card}>
             <div style={styles.cardHeader}>
-              <h2 style={{ margin: 0, fontSize: '1.2rem' }}>{acc.brand} {acc.model}</h2>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>{acc.brand} {acc.model}</h2>
               <span style={styles.badge}>{acc.accessory_type}</span>
             </div>
             <p><strong>Nº Serie:</strong> {acc.serial_number || 'N/A'}</p>
@@ -752,7 +642,7 @@ const AccessoryModal = ({ accessory, onSave, onClose }) => {
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
-        <h2>{accessory ? 'Editar Accesorio' : 'Nuevo Accesorio'}</h2>
+        <h2 style={{ marginTop: 0, fontWeight: '800' }}>{accessory ? 'Editar Accesorio' : 'Nuevo Accesorio'}</h2>
         <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }}>
           <div style={styles.formGroup}>
             <label>Marca (*):</label>
@@ -774,14 +664,6 @@ const AccessoryModal = ({ accessory, onSave, onClose }) => {
               <option value="HOOD">Parasol / Compendio</option>
               <option value="OTHER">Otro</option>
             </select>
-          </div>
-          <div style={styles.formGroup}>
-            <label>Nº de Serie:</label>
-            <input type="text" value={formData.serial_number} onChange={e => setFormData({...formData, serial_number: e.target.value})} style={styles.input} />
-          </div>
-          <div style={styles.formGroup}>
-            <label>Notas:</label>
-            <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} rows="2" style={styles.input} />
           </div>
           <div style={styles.modalActions}>
             <button type="button" onClick={onClose} style={styles.btnSecondary}>Cancelar</button>
@@ -813,11 +695,8 @@ const MountView = () => {
   React.useEffect(() => { fetchAll(); }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar esta montura? Ten en cuenta que si está asignada a cámaras o lentes podría causar conflictos.')) return;
-    await fetch(`/api/v1/lens-mounts/${id}/`, { 
-      method: 'DELETE', 
-      headers: { 'X-CSRFToken': getCookie('csrftoken') } 
-    });
+    if (!window.confirm('¿Eliminar esta montura?')) return;
+    await fetch(`/api/v1/lens-mounts/${id}/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
     fetchAll();
   };
 
@@ -826,10 +705,7 @@ const MountView = () => {
     const url = isEdit ? `/api/v1/lens-mounts/${editingMount.id}/` : '/api/v1/lens-mounts/';
     await fetch(url, {
       method: isEdit ? 'PUT' : 'POST',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'X-CSRFToken': getCookie('csrftoken') 
-      },
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
       body: JSON.stringify(formData),
     });
     setIsModalOpen(false);
@@ -842,19 +718,14 @@ const MountView = () => {
     <div>
       <div style={styles.headerBar}>
         <h1 style={styles.title}>Catálogo de Monturas</h1>
-        <button 
-          style={styles.btnPrimary} 
-          onClick={() => { setEditingMount(null); setIsModalOpen(true); }}
-        >
-          + Agregar Montura
-        </button>
+        <button style={styles.btnPrimary} onClick={() => { setEditingMount(null); setIsModalOpen(true); }}>+ Agregar Montura</button>
       </div>
 
       <div style={styles.grid}>
         {mounts.map(m => (
           <div key={m.id} style={styles.card}>
             <div style={styles.cardHeader}>
-              <h2 style={{ margin: 0, fontSize: '1.2rem' }}>{m.name}</h2>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>{m.name}</h2>
             </div>
             {m.description && <p style={{ color: darkTheme.textMuted }}>{m.description}</p>}
             <div style={styles.cardActions}>
@@ -866,11 +737,7 @@ const MountView = () => {
       </div>
 
       {isModalOpen && (
-        <MountModal 
-          mount={editingMount} 
-          onSave={handleSave} 
-          onClose={() => setIsModalOpen(false)} 
-        />
+        <MountModal mount={editingMount} onSave={handleSave} onClose={() => setIsModalOpen(false)} />
       )}
     </div>
   );
@@ -885,28 +752,15 @@ const MountModal = ({ mount, onSave, onClose }) => {
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
-        <h2>{mount ? 'Editar Montura' : 'Nueva Montura'}</h2>
+        <h2 style={{ marginTop: 0, fontWeight: '800' }}>{mount ? 'Editar Montura' : 'Nueva Montura'}</h2>
         <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }}>
           <div style={styles.formGroup}>
-            <label>Nombre de la Montura (*):</label>
-            <input 
-              type="text" 
-              value={formData.name} 
-              onChange={e => setFormData({...formData, name: e.target.value})} 
-              placeholder="Ej. Copal #0, M42, Leica M, Hasselblad V"
-              required 
-              style={styles.input} 
-            />
+            <label>Nombre (*):</label>
+            <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required style={styles.input} />
           </div>
           <div style={styles.formGroup}>
-            <label>Descripción / Notas:</label>
-            <textarea 
-              value={formData.description} 
-              onChange={e => setFormData({...formData, description: e.target.value})} 
-              placeholder="Ej. Obturador central para gran formato, Roscada 42mm, etc."
-              rows="3" 
-              style={styles.input} 
-            />
+            <label>Descripción:</label>
+            <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows="3" style={styles.input} />
           </div>
           <div style={styles.modalActions}>
             <button type="button" onClick={onClose} style={styles.btnSecondary}>Cancelar</button>
