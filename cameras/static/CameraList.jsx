@@ -1,24 +1,5 @@
 // static/js/CameraList.jsx
 
-const CameraApp = () => {
-  const [cameras, setCameras] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.setError ? React.useSetState : React.useState(null);
-
-  // Catálogos auxiliares para los checkboxes/selects
-  const [availableFormats, setAvailableFormats] = React.useState([]);
-  const [availableSizes, setAvailableSizes] = React.useState([]);
-
-  // Estado para controlar el modal y la cámara a editar
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [editingCamera, setEditingCamera] = React.useState(null);
-
-  const API_CAMERAS = '/api/v1/camerabody/';
-  const API_FORMATS = '/api/v1/film-formats/';    // Asegúrate de tener estos endpoints o ajústalos
-  const API_SIZES = '/api/v1/negative-sizes/';
-
-
-// Función para obtener una cookie por su nombre (ej. csrftoken)
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -34,23 +15,41 @@ function getCookie(name) {
   return cookieValue;
 }
 
-  // 1. Cargar datos iniciales
+const CameraApp = () => {
+  const [cameras, setCameras] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
+  // Catálogos auxiliares
+  const [availableFormats, setAvailableFormats] = React.useState([]);
+  const [availableSizes, setAvailableSizes] = React.useState([]);
+  const [availableMounts, setAvailableMounts] = React.useState([]);
+
+  // Estado del modal
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingCamera, setEditingCamera] = React.useState(null);
+
+  const API_CAMERAS = '/api/v1/camerabody/';
+  const API_FORMATS = '/api/v1/film-formats/';
+  const API_SIZES = '/api/v1/negative-sizes/';
+  const API_MOUNTS = '/api/v1/lens-mounts/';
+
   const fetchAllData = async () => {
     try {
       setLoading(true);
-      const [resCameras, resFormats, resSizes] = await Promise.all([
+      const [resCameras, resFormats, resSizes, resMounts] = await Promise.all([
         fetch(API_CAMERAS),
-        fetch(API_FORMATS).catch(() => null), // Si aún no los expones en la API, no romperá la app
-        fetch(API_SIZES).catch(() => null)
+        fetch(API_FORMATS).catch(() => null),
+        fetch(API_SIZES).catch(() => null),
+        fetch(API_MOUNTS).catch(() => null),
       ]);
 
       if (!resCameras.ok) throw new Error(`Error HTTP: ${resCameras.status}`);
       
-      const dataCameras = await resCameras.json();
-      setCameras(dataCameras);
-
+      setCameras(await resCameras.json());
       if (resFormats && resFormats.ok) setAvailableFormats(await resFormats.json());
       if (resSizes && resSizes.ok) setAvailableSizes(await resSizes.json());
+      if (resMounts && resMounts.ok) setAvailableMounts(await resMounts.json());
 
     } catch (err) {
       setError(err.message);
@@ -63,32 +62,27 @@ function getCookie(name) {
     fetchAllData();
   }, []);
 
-  // Abrir modal para crear nueva cámara
   const handleCreateNew = () => {
-    setEditingCamera(null); // Sin datos predeterminados
+    setEditingCamera(null);
     setIsModalOpen(true);
   };
 
-  // Abrir modal para editar cámara existente
   const handleEdit = (camera) => {
     setEditingCamera(camera);
     setIsModalOpen(true);
   };
 
-  // Guardar datos (Crear o Actualizar)
   const handleSave = async (formData) => {
     try {
       const isEdit = Boolean(editingCamera);
       const url = isEdit ? `${API_CAMERAS}${editingCamera.id}/` : API_CAMERAS;
       const method = isEdit ? 'PUT' : 'POST';
 
-      const csrftoken = getCookie('csrftoken'); // Obtener token CSRF
-
       const response = await fetch(url, {
         method: method,
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken, // Enviar token en los headers
+          'X-CSRFToken': getCookie('csrftoken'),
         },
         body: JSON.stringify(formData),
       });
@@ -127,6 +121,7 @@ function getCookie(name) {
                 <span style={styles.badge}>{camera.camera_type}</span>
               </div>
 
+              <p><strong>Montura:</strong> {camera.lens_mount_detail ? camera.lens_mount_detail.name : 'No asignada'}</p>
               <p><strong>Mecanismo:</strong> {camera.mechanism_type}</p>
               <p><strong>Año:</strong> {camera.release_year || 'N/A'}</p>
 
@@ -158,12 +153,12 @@ function getCookie(name) {
         </div>
       )}
 
-      {/* MODAL DE EDICIÓN / CREACIÓN */}
       {isModalOpen && (
         <CameraFormModal
           camera={editingCamera}
           availableFormats={availableFormats}
           availableSizes={availableSizes}
+          availableMounts={availableMounts}
           onSave={handleSave}
           onClose={() => setIsModalOpen(false)}
         />
@@ -174,9 +169,16 @@ function getCookie(name) {
 
 
 // =================================================================
-// COMPONENTE FORMULARIO / MODAL
+// FORMULARIO MODAL DE CÁMARA CON SELECTOR DE MONTURA
 // =================================================================
-const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onClose }) => {
+const CameraFormModal = ({
+  camera,
+  availableFormats,
+  availableSizes,
+  availableMounts,
+  onSave,
+  onClose
+}) => {
   const [formData, setFormData] = React.useState({
     brand: camera?.brand || '',
     model: camera?.model || '',
@@ -184,11 +186,11 @@ const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onC
     mechanism_type: camera?.mechanism_type || 'MECHANICAL',
     has_light_meter: camera?.has_light_meter || false,
     has_interchangeable_lens: camera?.has_interchangeable_lens ?? true,
-    lens_mount: camera?.lens_mount || '',
+    lens_mount: camera?.lens_mount_detail ? camera.lens_mount_detail.id : (camera?.lens_mount || ''),
     release_year: camera?.release_year || '',
-    // En el GET recibimos 'film_formats_detail', pero para enviar PUT/POST enviamos un arreglo de IDs
     film_formats: camera ? camera.film_formats_detail?.map(f => f.id) || [] : [],
     negative_sizes: camera ? camera.negative_sizes_detail?.map(s => s.id) || [] : [],
+    notes: camera?.notes || ''
   });
 
   const handleChange = (e) => {
@@ -209,7 +211,12 @@ const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onC
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const payload = {
+      ...formData,
+      lens_mount: formData.lens_mount ? parseInt(formData.lens_mount) : null,
+      release_year: formData.release_year ? parseInt(formData.release_year) : null,
+    };
+    onSave(payload);
   };
 
   return (
@@ -219,7 +226,7 @@ const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onC
         <form onSubmit={handleSubmit}>
           
           <div style={styles.formGroup}>
-            <label>Marca:</label>
+            <label>Marca (*):</label>
             <input
               type="text"
               name="brand"
@@ -231,7 +238,7 @@ const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onC
           </div>
 
           <div style={styles.formGroup}>
-            <label>Modelo:</label>
+            <label>Modelo (*):</label>
             <input
               type="text"
               name="model"
@@ -256,6 +263,23 @@ const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onC
               <option value="POINT_AND_SHOOT">Point & Shoot</option>
               <option value="MEDIUM_FORMAT_SYSTEM">Medio Formato</option>
               <option value="LARGE_FORMAT_VIEW">Gran Formato</option>
+              <option value="OTHER">Otro</option>
+            </select>
+          </div>
+
+          {/* NUEVO: Selector de Montura del Lente */}
+          <div style={styles.formGroup}>
+            <label>Montura de Lente:</label>
+            <select
+              name="lens_mount"
+              value={formData.lens_mount}
+              onChange={handleChange}
+              style={styles.input}
+            >
+              <option value="">-- Sin Montura Espefícica / No aplica --</option>
+              {availableMounts.map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
             </select>
           </div>
 
@@ -284,10 +308,10 @@ const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onC
             />
           </div>
 
-          {/* Formatos de Película (Multiselect) */}
+          {/* Formatos de Película */}
           {availableFormats.length > 0 && (
             <div style={styles.formGroup}>
-              <label>Formatos de Película (Mantén Presionado Ctrl/Cmd para seleccionar varios):</label>
+              <label>Formatos de Película (Ctrl/Cmd para varios):</label>
               <select
                 multiple
                 value={formData.film_formats}
@@ -301,10 +325,10 @@ const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onC
             </div>
           )}
 
-          {/* Tamaños de Negativo (Multiselect) */}
+          {/* Tamaños de Negativo */}
           {availableSizes.length > 0 && (
             <div style={styles.formGroup}>
-              <label>Tamaños de Negativo (Mantén Presionado Ctrl/Cmd para seleccionar varios):</label>
+              <label>Tamaños de Negativo (Ctrl/Cmd para varios):</label>
               <select
                 multiple
                 value={formData.negative_sizes}
@@ -330,6 +354,18 @@ const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onC
             </label>
           </div>
 
+          <div style={styles.checkboxGroup}>
+            <label>
+              <input
+                type="checkbox"
+                name="has_interchangeable_lens"
+                checked={formData.has_interchangeable_lens}
+                onChange={handleChange}
+              />
+              {' '}¿Tiene lentes intercambiables?
+            </label>
+          </div>
+
           <div style={styles.modalActions}>
             <button type="button" onClick={onClose} style={styles.btnSecondary}>
               Cancelar
@@ -345,8 +381,6 @@ const CameraFormModal = ({ camera, availableFormats, availableSizes, onSave, onC
   );
 };
 
-
-// Estilos integrados para el Modal y Formularios
 const styles = {
   container: { padding: '2rem', fontFamily: 'system-ui, sans-serif', maxWidth: '1200px', margin: '0 auto' },
   headerBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' },
@@ -361,21 +395,16 @@ const styles = {
   tagSecondary: { backgroundColor: '#f0fff4', color: '#276749', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.85rem' },
   center: { textAlign: 'center', padding: '3rem', fontSize: '1.2rem' },
   error: { color: '#e53e3e', textAlign: 'center', padding: '3rem' },
-  
-  // Botones
   btnPrimary: { backgroundColor: '#3182ce', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
   btnSecondary: { backgroundColor: '#e2e8f0', color: '#4a5568', border: 'none', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', marginRight: '0.5rem' },
   btnEdit: { backgroundColor: '#edf2f7', border: '1px solid #cbd5e0', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer' },
-
-  // Modal
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
   modalContent: { backgroundColor: '#fff', padding: '2rem', borderRadius: '8px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' },
-  formGroup: { marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' },
+  formGroup: { marginBottom: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' },
   checkboxGroup: { marginBottom: '1rem' },
-  input: { padding: '0.5rem', borderRadius: '4px', border: '1px solid #cbd5e0', fontSize: '0.9rem' },
+  input: { padding: '0.6rem', borderRadius: '4px', border: '1px solid #cbd5e0', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box' },
   modalActions: { display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }
 };
 
-// Renderizar la app en el DOM
 const root = ReactDOM.createRoot(document.getElementById('react-root'));
 root.render(<CameraApp />);

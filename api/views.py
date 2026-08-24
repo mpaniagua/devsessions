@@ -3,8 +3,8 @@
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from devsessions.models import Chemical,Developer,Developertype
-from cameras.models import CameraBody,FilmFormat,NegativeSize,LensType,Lens,LensMount
-from .serializers import ChemicalSerializer, DeveloperSerializaer,DevelopertypeSerializer,CameraBodySerializer,LensMountSerializer,LensSerializer,LensTypeSerializer,FilmFormatSerializer,NegativeSizeSerializer
+from cameras.models import CameraBody,FilmFormat,NegativeSize,LensType,Lens,LensMount,Accessory,CameraKit
+from .serializers import ChemicalSerializer, DeveloperSerializaer,DevelopertypeSerializer,CameraBodySerializer,LensMountSerializer,LensSerializer,LensTypeSerializer,FilmFormatSerializer,NegativeSizeSerializer,AccessorySerializer,CameraKitSerializer
 
 class ChemicalViewSet(viewsets.ModelViewSet):
     queryset = Chemical.objects.all()
@@ -48,4 +48,15 @@ class LensTypeViewSet(viewsets.ModelViewSet):
 class LensViewSet(viewsets.ModelViewSet):
     queryset = Lens.objects.all()
     serializer_class = LensSerializer
+    permission_classes = [AllowAny]    
+    
+    
+class AccessoryViewSet(viewsets.ModelViewSet):
+    queryset = Accessory.objects.all()
+    serializer_class = AccessorySerializer
+    permission_classes = [AllowAny]
+
+class CameraKitViewSet(viewsets.ModelViewSet):
+    queryset = CameraKit.objects.all()
+    serializer_class = CameraKitSerializer
     permission_classes = [AllowAny]    

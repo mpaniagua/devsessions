@@ -9,3 +9,13 @@ def camera_catalog_view(request):
 
 def lens_catalog_view(request):
     return render(request, 'cameras/lenses.html')
+
+
+def kit_catalog_view(request):
+    return render(request, 'cameras/kits.html')
+
+def accessory_catalog_view(request):
+    return render(request, 'cameras/accessories.html')
+
+def dark_app_view(request):
+    return render(request, 'cameras/app_dark.html')

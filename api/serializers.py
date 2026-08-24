@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from  devsessions.models import Chemical,Developer,Developertype
-from cameras.models import CameraBody, FilmFormat, NegativeSize,Lens,LensMount,LensType
+from cameras.models import CameraBody, FilmFormat, NegativeSize,Lens,LensMount,LensType,Accessory,CameraKit
 
 
 class DevelopertypeSerializer(serializers.ModelSerializer):
@@ -102,3 +102,50 @@ class CameraBodySerializer(serializers.ModelSerializer):
     def get_negative_sizes_detail(self, obj):
         from .serializers import NegativeSizeSerializer
         return NegativeSizeSerializer(obj.negative_sizes.all(), many=True).data
+    
+    
+class AccessorySerializer(serializers.ModelSerializer):
+    film_format_detail = FilmFormatSerializer(source='film_format', read_only=True)
+    negative_size_detail = NegativeSizeSerializer(source='negative_size', read_only=True)
+
+    film_format = serializers.PrimaryKeyRelatedField(
+        queryset=FilmFormat.objects.all(), allow_null=True, required=False, write_only=True
+    )
+    negative_size = serializers.PrimaryKeyRelatedField(
+        queryset=NegativeSize.objects.all(), allow_null=True, required=False, write_only=True
+    )
+
+    class Meta:
+        model = Accessory
+        fields = [
+            'id', 'brand', 'model', 'accessory_type', 'serial_number',
+            'film_format', 'film_format_detail',
+            'negative_size', 'negative_size_detail', 'notes'
+        ]
+
+
+class CameraKitSerializer(serializers.ModelSerializer):
+    # Detalles para lectura GET
+    camera_body_detail = CameraBodySerializer(source='camera_body', read_only=True)
+    lenses_detail = LensSerializer(source='lenses', many=True, read_only=True)
+    accessories_detail = AccessorySerializer(source='accessories', many=True, read_only=True)
+    active_film_format_detail = FilmFormatSerializer(source='active_film_format', read_only=True)
+    active_negative_size_detail = NegativeSizeSerializer(source='active_negative_size', read_only=True)
+
+    # Campos de escritura por ID (POST / PUT)
+    camera_body = serializers.PrimaryKeyRelatedField(queryset=CameraBody.objects.all())
+    lenses = serializers.PrimaryKeyRelatedField(queryset=Lens.objects.all(), many=True, required=False)
+    accessories = serializers.PrimaryKeyRelatedField(queryset=Accessory.objects.all(), many=True, required=False)
+    active_film_format = serializers.PrimaryKeyRelatedField(queryset=FilmFormat.objects.all(), allow_null=True, required=False)
+    active_negative_size = serializers.PrimaryKeyRelatedField(queryset=NegativeSize.objects.all(), allow_null=True, required=False)
+
+    class Meta:
+        model = CameraKit
+        fields = [
+            'id', 'name', 'is_active_setup', 'notes',
+            'camera_body', 'camera_body_detail',
+            'lenses', 'lenses_detail',
+            'accessories', 'accessories_detail',
+            'active_film_format', 'active_film_format_detail',
+            'active_negative_size', 'active_negative_size_detail'
+        ]
