@@ -3,8 +3,8 @@
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from devsessions.models import Chemical,Developer,Developertype
-from cameras.models import CameraBody,FilmFormat,NegativeSize,LensType,Lens,LensMount,Accessory,CameraKit
-from .serializers import ChemicalSerializer, DeveloperSerializaer,DevelopertypeSerializer,CameraBodySerializer,LensMountSerializer,LensSerializer,LensTypeSerializer,FilmFormatSerializer,NegativeSizeSerializer,AccessorySerializer,CameraKitSerializer
+from cameras.models import CameraBody,FilmFormat,NegativeSize,LensType,Lens,LensMount,Accessory,CameraKit,FilmStockInstance,FilmEmulsion
+from .serializers import ChemicalSerializer, DeveloperSerializaer,DevelopertypeSerializer,CameraBodySerializer,LensMountSerializer,LensSerializer,LensTypeSerializer,FilmFormatSerializer,NegativeSizeSerializer,AccessorySerializer,CameraKitSerializer,FilmEmulsionSerializer,FilmStockInstanceSerializer
 
 class ChemicalViewSet(viewsets.ModelViewSet):
     queryset = Chemical.objects.all()
@@ -59,4 +59,14 @@ class AccessoryViewSet(viewsets.ModelViewSet):
 class CameraKitViewSet(viewsets.ModelViewSet):
     queryset = CameraKit.objects.all()
     serializer_class = CameraKitSerializer
+    permission_classes = [AllowAny]    
+    
+class FilmEmulsionViewSet(viewsets.ModelViewSet):
+    queryset = FilmEmulsion.objects.all()
+    serializer_class = FilmEmulsionSerializer
+    permission_classes = [AllowAny]
+
+class FilmStockInstanceViewSet(viewsets.ModelViewSet):
+    queryset = FilmStockInstance.objects.all()
+    serializer_class = FilmStockInstanceSerializer
     permission_classes = [AllowAny]    

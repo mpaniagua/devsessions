@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from  devsessions.models import Chemical,Developer,Developertype
-from cameras.models import CameraBody, FilmFormat, NegativeSize,Lens,LensMount,LensType,Accessory,CameraKit
+from cameras.models import CameraBody, FilmFormat, NegativeSize,Lens,LensMount,LensType,Accessory,CameraKit, FilmEmulsion,FilmStockInstance
 
 
 class DevelopertypeSerializer(serializers.ModelSerializer):
@@ -148,4 +148,37 @@ class CameraKitSerializer(serializers.ModelSerializer):
             'accessories', 'accessories_detail',
             'active_film_format', 'active_film_format_detail',
             'active_negative_size', 'active_negative_size_detail'
+        ]
+        
+class FilmEmulsionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FilmEmulsion
+        fields = [
+            'id', 'manufacturer', 'name', 'process_type',
+            'base_iso', 'description'
+        ]
+
+
+class FilmStockInstanceSerializer(serializers.ModelSerializer):
+    emulsion_detail = FilmEmulsionSerializer(source='emulsion', read_only=True)
+    film_format_detail = FilmFormatSerializer(source='film_format', read_only=True)
+    negative_size_detail = NegativeSizeSerializer(source='negative_size', read_only=True)
+
+    emulsion = serializers.PrimaryKeyRelatedField(queryset=FilmEmulsion.objects.all())
+    film_format = serializers.PrimaryKeyRelatedField(queryset=FilmFormat.objects.all())
+    negative_size = serializers.PrimaryKeyRelatedField(
+        queryset=NegativeSize.objects.all(), allow_null=True, required=False
+    )
+    
+    # Campo opcional para permitir la autogeneración en el modelo
+    roll_code = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    class Meta:
+        model = FilmStockInstance
+        fields = [
+            'id', 'emulsion', 'emulsion_detail',
+            'film_format', 'film_format_detail',
+            'negative_size', 'negative_size_detail',
+            'exposed_iso', 'expositions_count', 'status',
+            'expiration_date', 'created_at', 'roll_code', 'notes'
         ]

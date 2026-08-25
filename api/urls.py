@@ -1,6 +1,6 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from .views import ChemicalViewSet,DeveloperViewSet, DeveloperTypeViewSet, CameraBodyViewset,FilmFormatViewSet,NegativeSizeViewSet,LensMountViewSet,LensTypeViewSet,LensViewSet,AccessoryViewSet,CameraKitViewSet
+from .views import ChemicalViewSet,DeveloperViewSet, DeveloperTypeViewSet, CameraBodyViewset,FilmFormatViewSet,NegativeSizeViewSet,LensMountViewSet,LensTypeViewSet,LensViewSet,AccessoryViewSet,CameraKitViewSet,FilmEmulsionViewSet,FilmStockInstanceViewSet
 
 router = DefaultRouter()
 router.register(r'chemicals',ChemicalViewSet,basename='chemical')
@@ -14,7 +14,8 @@ router.register(r'lens-types', LensTypeViewSet, basename='lenstype')
 router.register(r'lenses', LensViewSet, basename='lens')
 router.register(r'accessories', AccessoryViewSet, basename='accessory')
 router.register(r'kits', CameraKitViewSet, basename='camerakit')
-
+router.register(r'film-emulsions', FilmEmulsionViewSet, basename='filmemulsion')
+router.register(r'film-stocks', FilmStockInstanceViewSet, basename='filmstockinstance')
 
 urlpatterns=[
     path('',include(router.urls)),

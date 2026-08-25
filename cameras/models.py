@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 
 # 1. Tabla para Formatos de Película
 class FilmFormat(models.Model):
@@ -353,3 +353,133 @@ class CameraKit(models.Model):
     def __str__(self):
         lens_str = f" + {self.lens.brand} {self.lens.focal_length}" if self.lens else ""
         return f"{self.name} [{self.camera_body.brand} {self.camera_body.model}{lens_str}]"
+    
+
+
+class FilmEmulsion(models.Model):
+    class ProcessType(models.TextChoices):
+        BW = 'BW', 'Blanco y Negro'
+        C41 = 'C41', 'Color Negativo (C-41)'
+        E6 = 'E6', 'Diapositiva / Reversible (E-6)'
+        ECN2 = 'ECN2', 'Cine / Negativo Color (ECN-2)'
+        OTHER = 'OTHER', 'Otro Proceso'
+
+    manufacturer = models.CharField(
+        max_length=100,
+        verbose_name="Fabricante / Marca",
+        help_text="Ej. Kodak, Ilford, Agfa, Fujifilm, Foma"
+    )
+    name = models.CharField(
+        max_length=100,
+        verbose_name="Nombre de Emulsión",
+        help_text="Ej. Tri-X 400, HP5 Plus, Aviphot 200, Portra 400"
+    )
+    process_type = models.CharField(
+        max_length=10,
+        choices=ProcessType.choices,
+        default=ProcessType.BW,
+        verbose_name="Tipo de Proceso / Emulsión"
+    )
+    base_iso = models.IntegerField(
+        verbose_name="Sensibilidad Base (ISO/ASA)",
+        help_text="Ej. 100, 200, 400, 3200"
+    )
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Características / Notas de Revelado"
+    )
+
+    class Meta:
+        verbose_name = "Emulsión de Película"
+        verbose_name_plural = "Emulsiones de Película"
+        ordering = ['manufacturer', 'name']
+
+    def __str__(self):
+        return f"{self.manufacturer} {self.name} (ISO {self.base_iso})"
+
+
+class FilmStockInstance(models.Model):
+    class StorageStatus(models.TextChoices):
+        FRESH = 'FRESH', 'Sin Usar / Almacenado'
+        LOADED = 'LOADED', 'Cargado en Cámara / Respaldo'
+        EXPOSED = 'EXPOSED', 'Expuesto / Listo p/ Revelar'
+        DEVELOPED = 'DEVELOPED', 'Revelado'
+
+    emulsion = models.ForeignKey(
+        FilmEmulsion,
+        on_delete=models.CASCADE,
+        related_name="instances",
+        verbose_name="Emulsión / Tipo de Película"
+    )
+    film_format = models.ForeignKey(
+        FilmFormat,
+        on_delete=models.CASCADE,
+        related_name="film_instances",
+        verbose_name="Formato de Película"
+    )
+    negative_size = models.ForeignKey(
+        NegativeSize,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Tamaño de Placa / Negativo"
+    )
+    exposed_iso = models.IntegerField(
+        verbose_name="ISO / ASA Expuesto"
+    )
+    expositions_count = models.IntegerField(
+        default=12,
+        verbose_name="Número de Exposiciones / Disparos"
+    )
+    status = models.CharField(
+        max_length=15,
+        choices=StorageStatus.choices,
+        default=StorageStatus.FRESH,
+        verbose_name="Estado de la Película"
+    )
+    expiration_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de Caducidad"
+    )
+    # Fecha de ingreso al sistema (se usa para ddmmyy)
+    created_at = models.DateTimeField(
+        default=timezone.now,
+        editable=False,
+        verbose_name="Fecha de Ingreso"
+    )
+    roll_code = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Código / Lote / Identificador",
+        help_text="Si se deja en blanco, se auto-generará como 000000DDMMYY (ej. 000001250826)"
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Notas de Exposición / Proceso"
+    )
+
+    class Meta:
+        verbose_name = "Rollo / Placa de Película"
+        verbose_name_plural = "Rollos y Placas de Película"
+        ordering = ['-id']
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        # Primer guardado si es nuevo para obtener el ID de la base de datos
+        super().save(*args, **kwargs)
+
+        # Si no se ingresó un roll_code manual al crear, generamos el automático
+        if is_new and not self.roll_code:
+            date_str = self.created_at.strftime('%d%m%y') # ddmmyy
+            id_padded = str(self.id).zfill(6)             # 6 dígitos con ceros a la izquierda
+            self.roll_code = f"{id_padded}{date_str}"
+            # Actualizamos únicamente el campo roll_code en la DB
+            super().save(update_fields=['roll_code'])
+
+    def __str__(self):
+        code_str = f"[{self.roll_code}] " if self.roll_code else ""
+        return f"{code_str}{self.emulsion.manufacturer} {self.emulsion.name} - {self.get_status_display()}"

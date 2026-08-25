@@ -15,9 +15,6 @@ function getCookie(name) {
   return cookieValue;
 }
 
-// =================================================================
-// PALETA DE COLORES TEMA ASTROPLATE (Zinc Dark / Minimalist Graphite)
-// =================================================================
 const darkTheme = {
   bgApp: '#18181b',
   bgCard: '#27272a',
@@ -49,16 +46,16 @@ const styles = {
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
   },
   brandTitle: { fontSize: '1.35rem', fontWeight: '800', color: darkTheme.textMain, margin: 0, letterSpacing: '-0.025em' },
-  navTabs: { display: 'flex', gap: '0.6rem' },
+  navTabs: { display: 'flex', gap: '0.4rem', flexWrap: 'wrap' },
   navButton: (active) => ({
     backgroundColor: active ? '#27272a' : 'transparent',
     color: active ? '#ffffff' : darkTheme.textMuted,
     border: active ? `1px solid ${darkTheme.border}` : '1px solid transparent',
-    padding: '0.55rem 1.1rem',
+    padding: '0.5rem 0.9rem',
     borderRadius: '8px',
     cursor: 'pointer',
     fontWeight: '600',
-    fontSize: '0.9rem',
+    fontSize: '0.85rem',
     transition: 'all 0.2s ease',
   }),
   headerBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' },
@@ -99,11 +96,13 @@ const MainApp = () => {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: darkTheme.bgApp, color: darkTheme.textMain }}>
       <nav style={styles.navBar}>
-        <div style={styles.brandTitle}>📷  Gabinete Fotografico</div>
+        <div style={styles.brandTitle}>🚀 Astroplate / Gabinete</div>
         <div style={styles.navTabs}>
           <button style={styles.navButton(activeTab === 'kits')} onClick={() => setActiveTab('kits')}>⚙️ Kits</button>
           <button style={styles.navButton(activeTab === 'cameras')} onClick={() => setActiveTab('cameras')}>📷 Cámaras</button>
           <button style={styles.navButton(activeTab === 'lenses')} onClick={() => setActiveTab('lenses')}>🔍 Lentes</button>
+          <button style={styles.navButton(activeTab === 'emulsions')} onClick={() => setActiveTab('emulsions')}>🧪 Emulsiones</button>
+          <button style={styles.navButton(activeTab === 'filmstocks')} onClick={() => setActiveTab('filmstocks')}>🎞️ Rollos / Placas</button>
           <button style={styles.navButton(activeTab === 'accessories')} onClick={() => setActiveTab('accessories')}>📦 Accesorios</button>
           <button style={styles.navButton(activeTab === 'mounts')} onClick={() => setActiveTab('mounts')}>🔧 Monturas</button>
         </div>
@@ -113,6 +112,8 @@ const MainApp = () => {
         {activeTab === 'kits' && <KitView />}
         {activeTab === 'cameras' && <CameraView />}
         {activeTab === 'lenses' && <LensView />}
+        {activeTab === 'emulsions' && <EmulsionView />}
+        {activeTab === 'filmstocks' && <FilmStockView />}
         {activeTab === 'accessories' && <AccessoryView />}
         {activeTab === 'mounts' && <MountView />}
       </main>
@@ -122,7 +123,347 @@ const MainApp = () => {
 
 
 // =================================================================
-// 1. SECCIÓN: KITS
+// 1. SECCIÓN: EMULSIONES / TIPOS DE PELÍCULA
+// =================================================================
+const EmulsionView = () => {
+  const [emulsions, setEmulsions] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingItem, setEditingItem] = React.useState(null);
+
+  const fetchAll = async () => {
+    setLoading(true);
+    const res = await fetch('/api/v1/film-emulsions/').catch(() => null);
+    if (res && res.ok) setEmulsions(await res.json());
+    setLoading(false);
+  };
+
+  React.useEffect(() => { fetchAll(); }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Eliminar esta emulsión de película?')) return;
+    await fetch(`/api/v1/film-emulsions/${id}/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+    fetchAll();
+  };
+
+  const handleSave = async (payload) => {
+    const isEdit = Boolean(editingItem);
+    const url = isEdit ? `/api/v1/film-emulsions/${editingItem.id}/` : '/api/v1/film-emulsions/';
+    await fetch(url, {
+      method: isEdit ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify(payload),
+    });
+    setIsModalOpen(false);
+    fetchAll();
+  };
+
+  if (loading) return <div style={styles.center}>Cargando emulsiones...</div>;
+
+  return (
+    <div>
+      <div style={styles.headerBar}>
+        <h1 style={styles.title}>Catálogo de Emulsiones</h1>
+        <button style={styles.btnPrimary} onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>+ Nueva Emulsión</button>
+      </div>
+
+      <div style={styles.grid}>
+        {emulsions.map(em => (
+          <div key={em.id} style={styles.card}>
+            <div style={styles.cardHeader}>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>{em.manufacturer} {em.name}</h2>
+              <span style={styles.badge}>ISO {em.base_iso}</span>
+            </div>
+            <p><strong>Proceso:</strong> {em.process_type}</p>
+            {em.description && <p style={{ fontSize: '0.85rem', color: darkTheme.textMuted }}><em>{em.description}</em></p>}
+            <div style={styles.cardActions}>
+              <button style={styles.btnDelete} onClick={() => handleDelete(em.id)}>🗑️ Eliminar</button>
+              <button style={styles.btnEdit} onClick={() => { setEditingItem(em); setIsModalOpen(true); }}>✏️ Editar</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {isModalOpen && (
+        <EmulsionModal item={editingItem} onSave={handleSave} onClose={() => setIsModalOpen(false)} />
+      )}
+    </div>
+  );
+};
+
+const EmulsionModal = ({ item, onSave, onClose }) => {
+  const [formData, setFormData] = React.useState({
+    manufacturer: item?.manufacturer || '',
+    name: item?.name || '',
+    process_type: item?.process_type || 'BW',
+    base_iso: item?.base_iso || 400,
+    description: item?.description || '',
+  });
+
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalContent}>
+        <h2 style={{ marginTop: 0, fontWeight: '800' }}>{item ? 'Editar Emulsión' : 'Nueva Emulsión'}</h2>
+        <form onSubmit={(e) => { e.preventDefault(); onSave({...formData, base_iso: parseInt(formData.base_iso, 10)}); }}>
+          <div style={styles.formGroup}>
+            <label>Fabricante / Marca (*):</label>
+            <input type="text" value={formData.manufacturer} onChange={e => setFormData({...formData, manufacturer: e.target.value})} placeholder="Ej. Kodak, Ilford, Agfa" required style={styles.input} />
+          </div>
+          <div style={styles.formGroup}>
+            <label>Nombre de Emulsión (*):</label>
+            <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Ej. Tri-X, HP5 Plus, Aviphot 200" required style={styles.input} />
+          </div>
+          <div style={styles.formGroup}>
+            <label>Proceso / Tipo:</label>
+            <select value={formData.process_type} onChange={e => setFormData({...formData, process_type: e.target.value})} style={styles.input}>
+              <option value="BW">Blanco y Negro (B&W)</option>
+              <option value="C41">Color Negativo (C-41)</option>
+              <option value="E6">Diapositiva (E-6)</option>
+              <option value="ECN2">Cine (ECN-2)</option>
+              <option value="OTHER">Otro Proceso</option>
+            </select>
+          </div>
+          <div style={styles.formGroup}>
+            <label>Sensibilidad Base (ISO/ASA) (*):</label>
+            <input type="number" value={formData.base_iso} onChange={e => setFormData({...formData, base_iso: e.target.value})} required style={styles.input} />
+          </div>
+          <div style={styles.formGroup}>
+            <label>Notas / Descripción:</label>
+            <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows="3" style={styles.input} />
+          </div>
+          <div style={styles.modalActions}>
+            <button type="button" onClick={onClose} style={styles.btnSecondary}>Cancelar</button>
+            <button type="submit" style={styles.btnPrimary}>Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+
+// =================================================================
+// 2. SECCIÓN: ROLLOS Y PLACAS (INSTANCIAS FÍSICAS DE PELÍCULA)
+// =================================================================
+const FilmStockView = () => {
+  const [stocks, setStocks] = React.useState([]);
+  const [emulsions, setEmulsions] = React.useState([]);
+  const [formats, setFormats] = React.useState([]);
+  const [sizes, setSizes] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingItem, setEditingItem] = React.useState(null);
+
+  const fetchAll = async () => {
+    setLoading(true);
+    const [rS, rE, rF, rZ] = await Promise.all([
+      fetch('/api/v1/film-stocks/'),
+      fetch('/api/v1/film-emulsions/').catch(() => null),
+      fetch('/api/v1/film-formats/').catch(() => null),
+      fetch('/api/v1/negative-sizes/').catch(() => null),
+    ]);
+    if (rS && rS.ok) setStocks(await rS.json());
+    if (rE && rE.ok) setEmulsions(await rE.json());
+    if (rF && rF.ok) setFormats(await rF.json());
+    if (rZ && rZ.ok) setSizes(await rZ.json());
+    setLoading(false);
+  };
+
+  React.useEffect(() => { fetchAll(); }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Eliminar este rollo/placa del inventario?')) return;
+    await fetch(`/api/v1/film-stocks/${id}/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+    fetchAll();
+  };
+
+  const handleSave = async (payload) => {
+    const isEdit = Boolean(editingItem);
+    const url = isEdit ? `/api/v1/film-stocks/${editingItem.id}/` : '/api/v1/film-stocks/';
+    await fetch(url, {
+      method: isEdit ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify(payload),
+    });
+    setIsModalOpen(false);
+    fetchAll();
+  };
+
+  if (loading) return <div style={styles.center}>Cargando inventario de película...</div>;
+
+  return (
+    <div>
+      <div style={styles.headerBar}>
+        <h1 style={styles.title}>Rollos y Placas de Película</h1>
+        <button style={styles.btnPrimary} onClick={() => { setEditingItem(null); setIsModalOpen(true); }}>+ Registrar Rollo/Placa</button>
+      </div>
+
+      <div style={styles.grid}>
+        {stocks.map(st => (
+          <div key={st.id} style={styles.card}>
+            <div style={styles.cardHeader}>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>
+                {st.emulsion_detail ? `${st.emulsion_detail.manufacturer} ${st.emulsion_detail.name}` : 'Película'}
+              </h2>
+              <span style={st.status === 'EXPOSED' ? styles.badgeActive : styles.badge}>
+                {st.status}
+              </span>
+            </div>
+
+            <div style={styles.detailBox}>
+              <p style={{ margin: 0 }}><strong>🎞️ Formato:</strong> {st.film_format_detail?.name} {st.negative_size_detail ? `(${st.negative_size_detail.name})` : ''}</p>
+              <p style={{ margin: '0.3rem 0 0 0' }}><strong>📸 Exposiciones:</strong> {st.expositions_count} cuadros</p>
+            </div>
+
+            <p><strong>ISO Expuesto:</strong> {st.exposed_iso} {st.emulsion_detail && st.exposed_iso !== st.emulsion_detail.base_iso ? `(Base ${st.emulsion_detail.base_iso})` : ''}</p>
+            {st.roll_code && <p><strong>Lote/Código:</strong> {st.roll_code}</p>}
+            {st.expiration_date && <p><strong>Caducidad:</strong> {st.expiration_date}</p>}
+            {st.notes && <p style={{ fontSize: '0.85rem', color: darkTheme.textMuted }}><em>{st.notes}</em></p>}
+
+            <div style={styles.cardActions}>
+              <button style={styles.btnDelete} onClick={() => handleDelete(st.id)}>🗑️ Eliminar</button>
+              <button style={styles.btnEdit} onClick={() => { setEditingItem(st); setIsModalOpen(true); }}>✏️ Editar</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {isModalOpen && (
+        <FilmStockModal item={editingItem} emulsions={emulsions} formats={formats} sizes={sizes} onSave={handleSave} onClose={() => setIsModalOpen(false)} />
+      )}
+    </div>
+  );
+};
+
+const FilmStockModal = ({ item, emulsions, formats, sizes, onSave, onClose }) => {
+  const [formData, setFormData] = React.useState({
+    emulsion: item?.emulsion_detail ? item.emulsion_detail.id : (item?.emulsion || ''),
+    film_format: item?.film_format_detail ? item.film_format_detail.id : (item?.film_format || ''),
+    negative_size: item?.negative_size_detail ? item.negative_size_detail.id : (item?.negative_size || ''),
+    exposed_iso: item?.exposed_iso || 400,
+    expositions_count: item?.expositions_count || 12,
+    status: item?.status || 'FRESH',
+    expiration_date: item?.expiration_date || '',
+    roll_code: item?.roll_code || '',
+    notes: item?.notes || ''
+  });
+
+  // Al elegir emulsión, sugerir el ISO base por defecto
+  const handleEmulsionChange = (e) => {
+    const val = e.target.value;
+    const selectedEm = emulsions.find(em => String(em.id) === String(val));
+    setFormData(prev => ({
+      ...prev,
+      emulsion: val,
+      exposed_iso: selectedEm ? selectedEm.base_iso : prev.exposed_iso
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      emulsion: parseInt(formData.emulsion, 10),
+      film_format: parseInt(formData.film_format, 10),
+      negative_size: formData.negative_size ? parseInt(formData.negative_size, 10) : null,
+      exposed_iso: parseInt(formData.exposed_iso, 10),
+      expositions_count: parseInt(formData.expositions_count, 10),
+      status: formData.status,
+      expiration_date: formData.expiration_date || null,
+      roll_code: formData.roll_code || null,
+      notes: formData.notes || null
+    };
+    onSave(payload);
+  };
+
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalContent}>
+        <h2 style={{ marginTop: 0, fontWeight: '800' }}>{item ? 'Editar Rollo / Placa' : 'Registrar Rollo / Placa'}</h2>
+        <form onSubmit={handleSubmit}>
+          
+          <div style={styles.formGroup}>
+            <label>Emulsión de Película (*):</label>
+            <select value={formData.emulsion} onChange={handleEmulsionChange} required style={styles.input}>
+              <option value="">-- Seleccionar Emulsión --</option>
+              {emulsions.map(e => <option key={e.id} value={e.id}>{e.manufacturer} {e.name} (Base ISO {e.base_iso})</option>)}
+            </select>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>Formato (*):</label>
+            <select value={formData.film_format} onChange={e => setFormData({...formData, film_format: e.target.value})} required style={styles.input}>
+              <option value="">-- Seleccionar Formato --</option>
+              {formats.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+            </select>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>Tamaño de Negativo / Placa (opcional):</label>
+            <select value={formData.negative_size} onChange={e => setFormData({...formData, negative_size: e.target.value})} style={styles.input}>
+              <option value="">-- Seleccionar Tamaño --</option>
+              {sizes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>ISO / ASA Expuesto (*):</label>
+            <input type="number" value={formData.exposed_iso} onChange={e => setFormData({...formData, exposed_iso: e.target.value})} required style={styles.input} />
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>Número de Exposiciones / Cuadros (*):</label>
+            <input type="number" value={formData.expositions_count} onChange={e => setFormData({...formData, expositions_count: e.target.value})} required style={styles.input} />
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>Estado actual:</label>
+            <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} style={styles.input}>
+              <option value="FRESH">Sin Usar / Almacenado</option>
+              <option value="LOADED">Cargado en Cámara / Respaldo</option>
+              <option value="EXPOSED">Expuesto / Listo p/ Revelar</option>
+              <option value="DEVELOPED">Revelado</option>
+            </select>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>
+              Código / Identificador de Lote:
+              <span style={{ fontSize: '0.75rem', color: darkTheme.textMuted, display: 'block' }}>
+                (Opcional: Si se deja en blanco se asignará automáticamente ej. 000001250826)
+              </span>
+            </label>
+              <input 
+                type="text" 
+                value={formData.roll_code} 
+                onChange={e => setFormData({...formData, roll_code: e.target.value})} 
+                placeholder="Autogenerado (000000DDMMYY) si se deja vacío" 
+                style={styles.input} 
+              />
+            </div>
+
+          <div style={styles.formGroup}>
+            <label>Fecha de Caducidad:</label>
+            <input type="date" value={formData.expiration_date} onChange={e => setFormData({...formData, expiration_date: e.target.value})} style={styles.input} />
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>Notas de Exposición / Revelado:</label>
+            <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} rows="2" style={styles.input} />
+          </div>
+
+          <div style={styles.modalActions}>
+            <button type="button" onClick={onClose} style={styles.btnSecondary}>Cancelar</button>
+            <button type="submit" style={styles.btnPrimary}>Guardar Rollo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+
+// =================================================================
+// 3. SECCIÓN: KITS
 // =================================================================
 const KitView = () => {
   const [kits, setKits] = React.useState([]);
@@ -286,7 +627,7 @@ const KitModal = ({ kit, bodies, lenses, accessories, filmFormats, negativeSizes
 
 
 // =================================================================
-// 2. SECCIÓN: CÁMARAS
+// 4. SECCIÓN: CÁMARAS
 // =================================================================
 const CameraView = () => {
   const [cameras, setCameras] = React.useState([]);
@@ -443,7 +784,7 @@ const CameraModal = ({ camera, mounts, formats, sizes, onSave, onClose }) => {
 
 
 // =================================================================
-// 3. SECCIÓN: LENTES
+// 5. SECCIÓN: LENTES
 // =================================================================
 const LensView = () => {
   const [lenses, setLenses] = React.useState([]);
@@ -471,14 +812,22 @@ const LensView = () => {
     fetchAll();
   };
 
-  const handleSave = async (formData) => {
+  const handleSave = async (payload) => {
     const isEdit = Boolean(editingLens);
     const url = isEdit ? `/api/v1/lenses/${editingLens.id}/` : '/api/v1/lenses/';
-    await fetch(url, {
+    
+    const response = await fetch(url, {
       method: isEdit ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      alert(`Error al guardar el lente: ${JSON.stringify(err)}`);
+      return;
+    }
+
     setIsModalOpen(false);
     fetchAll();
   };
@@ -496,11 +845,19 @@ const LensView = () => {
         {lenses.map(lens => (
           <div key={lens.id} style={styles.card}>
             <div style={styles.cardHeader}>
-              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>{lens.brand} {lens.focal_length} {lens.max_aperture || ''}</h2>
-              <span style={styles.badge}>{lens.lens_mount_detail ? lens.lens_mount_detail.name : 'Sin montura'}</span>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>
+                {lens.brand} {lens.focal_length} {lens.max_aperture || ''}
+              </h2>
+              <span style={styles.badge}>
+                {lens.lens_mount_detail ? lens.lens_mount_detail.name : 'Sin montura'}
+              </span>
             </div>
             <p><strong>Modelo:</strong> {lens.model}</p>
             <p><strong>Serie:</strong> {lens.serial_number || 'N/A'}</p>
+            {lens.filter_thread_size && <p><strong>Rosca Filtro:</strong> {lens.filter_thread_size}</p>}
+            {lens.has_included_hood && <p style={{ color: darkTheme.greenTagText }}>✔ Parasol incluido</p>}
+            {lens.notes && <p style={{ fontSize: '0.85rem', color: darkTheme.textMuted }}><em>{lens.notes}</em></p>}
+            
             <div style={styles.cardActions}>
               <button style={styles.btnDelete} onClick={() => handleDelete(lens.id)}>🗑️ Eliminar</button>
               <button style={styles.btnEdit} onClick={() => { setEditingLens(lens); setIsModalOpen(true); }}>✏️ Editar</button>
@@ -524,25 +881,53 @@ const LensModal = ({ lens, mounts, onSave, onClose }) => {
     max_aperture: lens?.max_aperture || '',
     serial_number: lens?.serial_number || '',
     lens_mount: lens?.lens_mount_detail ? lens.lens_mount_detail.id : (lens?.lens_mount || ''),
+    filter_thread_size: lens?.filter_thread_size || '',
+    has_included_hood: lens?.has_included_hood ?? false,
+    notes: lens?.notes || ''
   });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      brand: formData.brand,
+      model: formData.model,
+      focal_length: formData.focal_length,
+      max_aperture: formData.max_aperture || null,
+      serial_number: formData.serial_number || null,
+      lens_mount: formData.lens_mount ? parseInt(formData.lens_mount, 10) : null,
+      filter_thread_size: formData.filter_thread_size || null,
+      has_included_hood: Boolean(formData.has_included_hood),
+      notes: formData.notes || null
+    };
+    onSave(payload);
+  };
 
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modalContent}>
         <h2 style={{ marginTop: 0, fontWeight: '800' }}>{lens ? 'Editar Lente' : 'Nuevo Lente'}</h2>
-        <form onSubmit={(e) => { e.preventDefault(); onSave({...formData, lens_mount: formData.lens_mount ? parseInt(formData.lens_mount) : null}); }}>
+        <form onSubmit={handleSubmit}>
+          
           <div style={styles.formGroup}>
             <label>Marca (*):</label>
-            <input type="text" value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} required style={styles.input} />
+            <input type="text" value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} placeholder="Ej. C.P. Goerz, Fujinon, Zeiss" required style={styles.input} />
           </div>
+
           <div style={styles.formGroup}>
             <label>Distancia Focal (*):</label>
-            <input type="text" value={formData.focal_length} onChange={e => setFormData({...formData, focal_length: e.target.value})} placeholder="Ej. 80mm, 70-210mm" required style={styles.input} />
+            <input type="text" value={formData.focal_length} onChange={e => setFormData({...formData, focal_length: e.target.value})} placeholder="Ej. 168mm, 75mm, 70-210mm" required style={styles.input} />
           </div>
+
+          <div style={styles.formGroup}>
+            <label>Apertura Máxima:</label>
+            <input type="text" value={formData.max_aperture} onChange={e => setFormData({...formData, max_aperture: e.target.value})} placeholder="Ej. f/6.8, f/5.6, f/2.8" style={styles.input} />
+          </div>
+
           <div style={styles.formGroup}>
             <label>Nombre / Modelo (*):</label>
-            <input type="text" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} required style={styles.input} />
+            <input type="text" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} placeholder="Ej. Dagor, Dogmar, SWD" required style={styles.input} />
           </div>
+
           <div style={styles.formGroup}>
             <label>Montura:</label>
             <select value={formData.lens_mount} onChange={e => setFormData({...formData, lens_mount: e.target.value})} style={styles.input}>
@@ -550,9 +935,30 @@ const LensModal = ({ lens, mounts, onSave, onClose }) => {
               {mounts.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
+
+          <div style={styles.formGroup}>
+            <label>Número de Serie:</label>
+            <input type="text" value={formData.serial_number} onChange={e => setFormData({...formData, serial_number: e.target.value})} placeholder="Ej. 8910349" style={styles.input} />
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>Tamaño Rosca de Filtro:</label>
+            <input type="text" value={formData.filter_thread_size} onChange={e => setFormData({...formData, filter_thread_size: e.target.value})} placeholder="Ej. 49mm, 67mm, Series VI" style={styles.input} />
+          </div>
+
+          <div style={{ ...styles.formGroup, flexDirection: 'row', alignItems: 'center', gap: '0.6rem' }}>
+            <input type="checkbox" id="has_included_hood" checked={formData.has_included_hood} onChange={e => setFormData({...formData, has_included_hood: e.target.checked})} />
+            <label htmlFor="has_included_hood" style={{ cursor: 'pointer' }}>¿Parasol incluido?</label>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label>Notas Adicionales:</label>
+            <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} rows="3" placeholder="Ej. Cobertura para 4x5, excelente estado" style={styles.input} />
+          </div>
+
           <div style={styles.modalActions}>
             <button type="button" onClick={onClose} style={styles.btnSecondary}>Cancelar</button>
-            <button type="submit" style={styles.btnPrimary}>Guardar</button>
+            <button type="submit" style={styles.btnPrimary}>Guardar Lente</button>
           </div>
         </form>
       </div>
@@ -562,7 +968,7 @@ const LensModal = ({ lens, mounts, onSave, onClose }) => {
 
 
 // =================================================================
-// 4. SECCIÓN: ACCESORIOS
+// 6. SECCIÓN: ACCESORIOS
 // =================================================================
 const AccessoryView = () => {
   const [accessories, setAccessories] = React.useState([]);
@@ -677,7 +1083,7 @@ const AccessoryModal = ({ accessory, onSave, onClose }) => {
 
 
 // =================================================================
-// 5. SECCIÓN: MONTURAS
+// 7. SECCIÓN: MONTURAS
 // =================================================================
 const MountView = () => {
   const [mounts, setMounts] = React.useState([]);
