@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models 
 from django.utils import timezone
 
 # 1. Tabla para Formatos de Película
@@ -398,7 +398,6 @@ class FilmEmulsion(models.Model):
     def __str__(self):
         return f"{self.manufacturer} {self.name} (ISO {self.base_iso})"
 
-
 class FilmStockInstance(models.Model):
     class StorageStatus(models.TextChoices):
         FRESH = 'FRESH', 'Sin Usar / Almacenado'
@@ -407,23 +406,33 @@ class FilmStockInstance(models.Model):
         DEVELOPED = 'DEVELOPED', 'Revelado'
 
     emulsion = models.ForeignKey(
-        FilmEmulsion,
+        'FilmEmulsion',
         on_delete=models.CASCADE,
         related_name="instances",
         verbose_name="Emulsión / Tipo de Película"
     )
     film_format = models.ForeignKey(
-        FilmFormat,
+        'FilmFormat',
         on_delete=models.CASCADE,
         related_name="film_instances",
         verbose_name="Formato de Película"
     )
     negative_size = models.ForeignKey(
-        NegativeSize,
+        'NegativeSize',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name="Tamaño de Placa / Negativo"
+    )
+    # NUEVO CAMPO: Relación con Respaldo de Película / Magazine
+    film_back = models.ForeignKey(
+        'Accessory',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        limit_choices_to={'accessory_type': 'FILM_BACK'},
+        related_name="loaded_film_stocks",
+        verbose_name="Respaldo / Magazine / Chasis"
     )
     exposed_iso = models.IntegerField(
         verbose_name="ISO / ASA Expuesto"
@@ -443,7 +452,6 @@ class FilmStockInstance(models.Model):
         blank=True,
         verbose_name="Fecha de Caducidad"
     )
-    # Fecha de ingreso al sistema (se usa para ddmmyy)
     created_at = models.DateTimeField(
         default=timezone.now,
         editable=False,
@@ -453,8 +461,7 @@ class FilmStockInstance(models.Model):
         max_length=50,
         blank=True,
         null=True,
-        verbose_name="Código / Lote / Identificador",
-        help_text="Si se deja en blanco, se auto-generará como 000000DDMMYY (ej. 000001250826)"
+        verbose_name="Código / Lote / Identificador"
     )
     notes = models.TextField(
         blank=True,
@@ -469,17 +476,80 @@ class FilmStockInstance(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
-        # Primer guardado si es nuevo para obtener el ID de la base de datos
         super().save(*args, **kwargs)
 
-        # Si no se ingresó un roll_code manual al crear, generamos el automático
         if is_new and not self.roll_code:
-            date_str = self.created_at.strftime('%d%m%y') # ddmmyy
-            id_padded = str(self.id).zfill(6)             # 6 dígitos con ceros a la izquierda
+            date_str = self.created_at.strftime('%d%m%y')
+            id_padded = str(self.id).zfill(6)
             self.roll_code = f"{id_padded}{date_str}"
-            # Actualizamos únicamente el campo roll_code en la DB
             super().save(update_fields=['roll_code'])
 
     def __str__(self):
         code_str = f"[{self.roll_code}] " if self.roll_code else ""
         return f"{code_str}{self.emulsion.manufacturer} {self.emulsion.name} - {self.get_status_display()}"
+    
+    
+class PhotoSession(models.Model):
+    title = models.CharField(
+        max_length=150,
+        verbose_name="Título / Proyecto de la Sesión",
+        help_text="Ej. Paisajes de La Rumorosa, Retratos en Estudio, Arquitectura Centro"
+    )
+    kit = models.ForeignKey(
+        CameraKit,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="photo_sessions",
+        verbose_name="Kit de Equipo Utilizado"
+    )
+    film_stocks = models.ManyToManyField(
+        FilmStockInstance,
+        blank=True,
+        related_name="photo_sessions",
+        verbose_name="Rollos / Placas Expuestos"
+    )
+    start_date = models.DateField(
+        default=timezone.now,
+        verbose_name="Fecha de Inicio"
+    )
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de Término",
+        help_text="Dejar en blanco si fue una sesión de un solo día"
+    )
+    location = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Locación principal / Área"
+    )
+    is_multiple_locations = models.BooleanField(
+        default=False,
+        verbose_name="¿Fueron múltiples locaciones?"
+    )
+    locations_detail = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Detalle de Locaciones",
+        help_text="Lista o descripción de los puntos o itinerario visitado"
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Notas de Trabajo / Condiciones de Luz / Filtros"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha de Registro"
+    )
+
+    class Meta:
+        verbose_name = "Sesión Fotográfica"
+        verbose_name_plural = "Sesiones Fotográficas"
+        ordering = ['-start_date', '-id']
+
+    def __str__(self):
+        date_str = self.start_date.strftime('%Y-%m-%d')
+        return f"{self.title} ({date_str})"

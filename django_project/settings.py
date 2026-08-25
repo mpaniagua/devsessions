@@ -150,3 +150,13 @@ BOOTSTRAP_THEME_COLORS = [
     '#59359a',  # Variante hover
     '#482a7a',  # Variante activa / click
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+}

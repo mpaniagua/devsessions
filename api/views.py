@@ -3,8 +3,15 @@
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from devsessions.models import Chemical,Developer,Developertype
-from cameras.models import CameraBody,FilmFormat,NegativeSize,LensType,Lens,LensMount,Accessory,CameraKit,FilmStockInstance,FilmEmulsion
-from .serializers import ChemicalSerializer, DeveloperSerializaer,DevelopertypeSerializer,CameraBodySerializer,LensMountSerializer,LensSerializer,LensTypeSerializer,FilmFormatSerializer,NegativeSizeSerializer,AccessorySerializer,CameraKitSerializer,FilmEmulsionSerializer,FilmStockInstanceSerializer
+from cameras.models import CameraBody,FilmFormat,NegativeSize,LensType,Lens,LensMount,Accessory,CameraKit,FilmStockInstance,FilmEmulsion,PhotoSession
+from .serializers import ChemicalSerializer, DeveloperSerializaer,DevelopertypeSerializer,CameraBodySerializer,LensMountSerializer,LensSerializer,LensTypeSerializer,FilmFormatSerializer,NegativeSizeSerializer,AccessorySerializer,CameraKitSerializer,FilmEmulsionSerializer,FilmStockInstanceSerializer, PhotoSessionSerializer
+
+from django.contrib.auth import authenticate, login,logout
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+
 
 class ChemicalViewSet(viewsets.ModelViewSet):
     queryset = Chemical.objects.all()
@@ -70,3 +77,44 @@ class FilmStockInstanceViewSet(viewsets.ModelViewSet):
     queryset = FilmStockInstance.objects.all()
     serializer_class = FilmStockInstanceSerializer
     permission_classes = [AllowAny]    
+    
+    
+class PhotoSessionViewSet(viewsets.ModelViewSet):
+    queryset = PhotoSession.objects.all()
+    serializer_class = PhotoSessionSerializer
+    permission_classes = [AllowAny]    
+    
+    
+@api_view(['POST'])
+@permission_classes([AllowAny])
+
+def api_login(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(request, username=username, password=password)
+
+    if user is not None:
+        login(request, user)
+        return JsonResponse({
+            'detail': 'Sesión iniciada correctamente',
+            'username': user.username
+        })
+    return JsonResponse({'detail': 'Credenciales inválidas'}, status=400)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_logout(request):
+    logout(request)
+    return JsonResponse({'detail': 'Sesión cerrada correctamente'})
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def current_user(request):
+    if request.user.is_authenticated:
+        return JsonResponse({
+            'is_authenticated': True,
+            'username': request.user.username
+        })
+    return JsonResponse({'is_authenticated': False})

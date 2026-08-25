@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from  devsessions.models import Chemical,Developer,Developertype
-from cameras.models import CameraBody, FilmFormat, NegativeSize,Lens,LensMount,LensType,Accessory,CameraKit, FilmEmulsion,FilmStockInstance
+from cameras.models import CameraBody, FilmFormat, NegativeSize,Lens,LensMount,LensType,Accessory,CameraKit, FilmEmulsion,FilmStockInstance,PhotoSession
 
 
 class DevelopertypeSerializer(serializers.ModelSerializer):
@@ -163,14 +163,16 @@ class FilmStockInstanceSerializer(serializers.ModelSerializer):
     emulsion_detail = FilmEmulsionSerializer(source='emulsion', read_only=True)
     film_format_detail = FilmFormatSerializer(source='film_format', read_only=True)
     negative_size_detail = NegativeSizeSerializer(source='negative_size', read_only=True)
+    film_back_detail = AccessorySerializer(source='film_back', read_only=True)
 
     emulsion = serializers.PrimaryKeyRelatedField(queryset=FilmEmulsion.objects.all())
     film_format = serializers.PrimaryKeyRelatedField(queryset=FilmFormat.objects.all())
     negative_size = serializers.PrimaryKeyRelatedField(
         queryset=NegativeSize.objects.all(), allow_null=True, required=False
     )
-    
-    # Campo opcional para permitir la autogeneración en el modelo
+    film_back = serializers.PrimaryKeyRelatedField(
+        queryset=Accessory.objects.all(), allow_null=True, required=False
+    )
     roll_code = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
@@ -179,6 +181,34 @@ class FilmStockInstanceSerializer(serializers.ModelSerializer):
             'id', 'emulsion', 'emulsion_detail',
             'film_format', 'film_format_detail',
             'negative_size', 'negative_size_detail',
+            'film_back', 'film_back_detail',
             'exposed_iso', 'expositions_count', 'status',
             'expiration_date', 'created_at', 'roll_code', 'notes'
         ]
+
+        
+        
+class PhotoSessionSerializer(serializers.ModelSerializer):
+    kit_detail = CameraKitSerializer(source= 'kit', read_only=True)
+    film_stocks_detail = FilmStockInstanceSerializer(source='film_stocks', many=True, read_only=True)
+
+    kit = serializers.PrimaryKeyRelatedField(
+        queryset=CameraKit.objects.all(),
+        allow_null=True,
+        required=False
+    )
+    film_stocks = serializers.PrimaryKeyRelatedField(
+        queryset=FilmStockInstance.objects.all(),
+        many=True,
+        required=False
+    )
+
+    class Meta:
+        model = PhotoSession
+        fields = [
+            'id', 'title', 'kit', 'kit_detail',
+            'film_stocks', 'film_stocks_detail',
+            'start_date', 'end_date', 'location',
+            'is_multiple_locations', 'locations_detail',
+            'notes', 'created_at'
+        ]        
